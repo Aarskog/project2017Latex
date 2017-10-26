@@ -90,7 +90,7 @@ A_5 &= \begin{bmatrix}
     \end{bmatrix}\\
     T_3^0 &= A_1A_2A_3=
     \begin{bmatrix}\label{eq:T3}
-        c_{23}c_1 & -c_1s_{23} & -s_1 &c_1(a_3c_{23} + a_2c_2)\\
+        c_{23}c_1 & -c_1s_{23} & -s_1 & c_1(a_3c_{23} + a_2c_2)\\
         c_{23}s_1 & -s_1s_{23} & c_1 & s_1(a_3c_{23} + a_2c_2)\\
         -s_{23} & -c_{23} & 0 & d_1 - a_3s_{23}-a_2s_2\\
         0 & 0 & 0 & 1
@@ -113,6 +113,18 @@ A_5 &= \begin{bmatrix}
     \end{split}
  \end{align}
 \end{subequations}
+where $s_{ijk} = \sin{(q_i + q_j + q_k)}$ and the same for $c_{ijk}$. The $T_i^0$ matrix can be sectioned into \begin{align*}
+ T_i^0 = 
+    \begin{bmatrix}
+        \bm{R}(\bm{q}) & \bm{p}(\bm{q})\\
+        \bm{0}^T & 1
+    \end{bmatrix}    
+\end{align*}
+
+
+
+
+
 
 
 %-----------------------------------------------------------------------------------------
@@ -241,14 +253,24 @@ Since our manipulator only has revolute joints, the geometric Jacobian becomes
         \bm{z}_4
     \end{bmatrix}
 \end{align*}
-the next step is therefore to find $p_i$. 
+From when the forward kinematics were calculated each position vector $\bm{p}_i$ can be directly obtained from the equations \eqref{eq:T1} - \eqref{eq:T5}:
 
 
 
+\begin{align*}
+    \bm{p_0} = \begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix}    \quad
+    \bm{p_1} = \begin{bmatrix} 0 \\ 0 \\ d_1\end{bmatrix}    \quad
+    \bm{p_2} = \begin{bmatrix} a_2c_1c_2\\ a_2s_1c_2\\ d_1 - a_2s_2\end{bmatrix}   \quad 
+    \bm{p_3} = \begin{bmatrix} c_1(a_3c_{23} + a_2c_2) \\ s_1(a_3c_{23} + a_2c_2) \\ d_1 - a_3s_{23}-a_2s_2 \end{bmatrix}  \\  
+    \bm{p_4} = \begin{bmatrix} c_1(a_3c_{23} + a_2c_2) \\ s_1(a_3c_{23} + a_2c_2) \\ d_1 - a_3s_{23}-a_2s_2\end{bmatrix}  \quad  
+    \bm{p_5} = \begin{bmatrix} c_1(a_3c_{23} + a_2c_2 + d_5s_{234}) \\ s_1(a_3c_{23} + a_2c_2 + d_5s_{234}) \\ d_1 - a_3s_{23} - a_2s_2 + d_5c_{234} \end{bmatrix}    
+\end{align*}
 
-
-
-
+The next step is to find $z_{i-1}$
+$$
+z_{i-1} = \bm{R}_{i-1}^{i-2}z_{i-2}
+$$
+where $z_0 = [0,0,1]^T$
 
 
 
