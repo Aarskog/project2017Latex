@@ -1,15 +1,39 @@
+\chapter{Software Environment/ Simulation environment}
+%\section{What software to use}
 
-\section{ROS}
-\subsection{Some}
+%The problem at hand is to use a software simulation tool such that it is easy to test out different controllers and different methods of motion planning. 
 
-%To test the system it is much better to simulate the given system instead of doing testing on the real system. That is because then one can do testing without destroying expensive equipment and if multiple people are working on the same project everyone can do simulation test on the system without waiting in turn. It is also easier to perform testing of control algorithms without any disturbances and noise. 
 
-\subsection{ROS - Robot Operating System}
-ROS is not really an operating system as its names states. On their own website ROS is described as a flexible framework for writing robot software. ROS has a collection of libraries, tools, and conventions that are meant to simplify the complex proccess of creating a robust and a good robot software. Tasks that are very simple for us humans will be very complex and hard for a robot. ROS was created in the thought of that everone with knowledge of different robotics aspects can contribute to ROS and at the same time make use of other ressources others have made. In such ways ROS is always in development and encourage groups to collaborate to make ROS better and better. 
+%As mentioned above it is much better to simulate the given system instead of doing testing on the real system. That is because then one can do testing without destroying expensive equipment and if multiple people are working on the same project everyone can do simulation and testing on the system without waiting in turn. It is also easier to perform testing of control algorithms without any disturbances and noise. 
+
+\section{Robot Operating System(ROS)}
+When designing any type of complex system where different types of software and code shall work together it can be difficult to get every part to work together and pass information to each other. Robot Operating System can help with that by creating an easy to use framework for passing information between different processes. ROS is not really an operating system as its name may state. On their own website ROS is described as a flexible framework for writing robot software. ROS has a collection of libraries, tools, and conventions that are meant to simplify the complex process of creating a robust and a good robot software. Tasks that are very simple for us humans will be very complex and hard for a robot. ROS was created in the thought of that everyone with knowledge of different robotics aspects can contribute to ROS and at the same time make use of other resources other have made. In such ways ROS is always in development and encourage groups to collaborate to make ROS better and better. \\
+
+In this report several resources made for ROS are used. The two main topics used with is this report is to interact with the simulation environment and do basic low level control.
 
 
 \subsection{RVIZ}
-Rviz or ROS visualization, is one the packagages that comes with ROS. It is used for 3D visualization gathered from sensor data from the real system or state data from a simulation environment. Rviz is a very good tool to visualize the current state of the robot. If the plan is to use a vision system Rviz is very good to use to see what the robot sees and therefore makes the debugging even easier. 
+Rviz or ROS visualization, is one the packagages that comes with ROS at install. It is used for 3D visualization gathered from sensor data from the real system or state data from a simulation environment or a real system. Rviz is a very good tool to visualize the current state of the robot. In other words if you are to do some kind of operation with a real robot arm it can be usefull to visualize what kind of data the senors really are sending back to you. This is useful for debugging or it is hard to physically see the robot from where the robot is steered from.\\
+In this report RVIZ is used as debugging tool to see that the data which is received corrresponds with the expected data. RVIZ is mostly included here such that the transition between the simulation and real robot arm is easier. Said differently RVIZ will make most use of itself when used on the real robot arm. 
+
+\section{Simulation environment}
+When choosing a robot simulator the choice fell upon Gazebo. There were several types of simulators that could be used. As one can see in \figref{fig:infra} Gazebo and OpengRAVE has the best support infrastructure which in this project was important due to earlier experience with ROS and robot simulation. Gazebo was chosen over OpenRAVE because Gazebo had a more well established ROS documentation and tutorials in the ROS homepage. \\
+
+
+
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.9\textwidth]{img/WikipTableRobSim.png}
+  \caption{Types of support the different robot simulators provides. Taken from \href{https://en.wikipedia.org/wiki/Robotics_simulator}{\underline{Wikipedia}}(https://en.wikipedia.org/wiki/Robotics\_simulator)}
+  \label{fig:infra}
+\end{figure}
+
+With Gazebo you can place a 3D model of the robot arm in a 3D scenario where you can place different other objects and for example test out different object avoidance algorithms. Gazebo comes with a good physics engine which give good simulation of the inertia and gravity impacting the robot. This is important because these are the two effects which impact the robot most. This will most likely make the transition between the simulated robot and the real robot less painful. \\
+
+It can be useful to know that Gazebo is a 
+
+
 
 
 %For simulation and visualization in ROS, Rviz and Gazebo are used. Gazebo is a simulation environment with a good physics engine which can be used to simulate and test different control algorithms. Rviz is just a visualization tool to visualize the robot configuration and is great to use along with control of actual hardware. 
@@ -24,9 +48,10 @@ Rviz or ROS visualization, is one the packagages that comes with ROS. It is used
 %\end{figure}
 
 
-\section*{Coding}
-All the code can be found at this Github repository: \href{https://github.com/Aarskog/robotarm}{\underline{rotbotarm}}
+\section{Code}
+All the code can be found at this Github repository: \href{https://github.com/Aarskog/robotarm}{\underline{rotbotarm}}\\
 
+Now that the software to be
 
 \subsection{Unified Robot Description Format (URDF)}
 So far the model of the manipulator has been done using a Unified Robot Description Format (URDF) file. The syntax is very easy to understand. In \figref{fig:urdf_code_example} some code for the manipulator is given. This code decribes the mounting plates on the motors where the nect link can be mounted on. 
@@ -46,19 +71,19 @@ This particular code is a macro which means that it can be reused later in the c
 \subsection{YAML-file}
 In the project, the joints.yaml file is the configuration file that states the torque controller for each joint. As per now a PID controller is used for each joint. This is based on a SISO system for each joint. The dynamic equations of the manipulator is in fact a complex nonlinear and multivariable system. 
 
-\subsection*{Launch files}
+\subsection{Launch files}
 The launch files are used for starting up Gazebo,Rviz and the different nodes. It is also used to place the robot model into the simulation environment. The controller nodes are launched form control.launch.
 
 
 
 
 
-\subsection*{Python}
+\subsection{Python}
 As per now a single python script is used for control of the manipulator. The task of the script is to listen to the Gazebo topic wich publishes the joint variables. 
 
 
-\section*{Description of the Robot hand at hand}
-
+\section{Description of the Robot hand at hand}
+Basic information of the robot manipulator. 
 
 \begin{figure}[htbp]
   \centering
@@ -68,22 +93,20 @@ As per now a single python script is used for control of the manipulator. The ta
 \end{figure}
 
 
-\section{Why use Gazebo to simulate the robot?}
-
-\section*{Making a visual model to be used in Gazebo}
-To make the visual model of the robot arm Unified Robot Description Format(URDF) is used. It is based on XML and is very easy to use although it has its limitations. It is not compatible with parallel linkages and it does not include friction among other things. It can not specify other objects which are not part of the robot. For this case the URDF works fine. The URDF includes mass and inertia as parameters which is possible to add a property of the joint. With this is mind the first to do is to find the mass of the different components that the robot at hand consists of. In \figref{fig:robotAH} for modelling and simulation the turntable base mass is not important to know since it is assumed that it is an unmoveable object that is stuck on the world frame. \\
+\section{Making a visual model to be used in Gazebo}
+The URDF includes mass and inertia as parameters which is possible to add a property of the joint. With this is mind the first to do is to find the mass of the different components that the robot at hand consists of. In \figref{fig:robotAH} for modelling and simulation the turntable base mass is not important to know since it is assumed that it is an unmoveable object that is stuck on the world frame. \\
 
 \subsection{Dviding the robot into parts}
 For the robot to be properly modelled in the URDF file the robot has to split up into different parts. This must be done because the URDF file is constructed such that you build your robot in sequence from the bottom and up by adding part by part and states where it is and how it should behave in respect to its parent part. The parent of the first part is the world frame. In table \tabref{table:partlist} the different parts from the datasheet is listed. \tabref{table:partlist} is the initial list that was used as a base for constructing the robot. And in \figref{fig:utgangspunkt} the partnames are set their respective places on the robot. 
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Partlist of the relevant parts taken from the datasheet and webpage of the robot}
 \label{table:partlist}
     \begin{tabular}{ l r}
-        \hline \\[-1em]
+        \toprule
         Partname  & Amount \\
-        \hline
+        \midrule
         MX-28T Pro-Series Turntable & 1\\
         MX-64T Pro-Series Single Axis kits& 2\\
         Pro-Series Single Axis Mounting Plates & 3\\
@@ -92,7 +115,7 @@ For the robot to be properly modelled in the URDF file the robot has to split up
         MX-28T Pro-Series Wrist Rotate kit & 1\\
         Pro-Series Wrist to Dual Gripper Adapter & 1\\
         Dual gripper kit with two AX-12A Servos& 1\\
-               \hline
+               \bottomrule
     \end{tabular}
 \end{table}
 
@@ -109,14 +132,14 @@ For the robot to be properly modelled in the URDF file the robot has to split up
 
 \subsection{Finding and guesstimating weights}
 All the other weights above the turntable must be known. Unfortunately the datasheet does not give specific information about all of the parts. More of items were found in the webstore, but not all. The rest had to be guesstimated. For example the mass of circular plate which the rest of the arm stands on is not given explicitly. In \tabref{table:partmass} the different masses of the parts are presented. 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Mass of parts}
 \label{table:partmass}
     \begin{tabular}{l c r}
-        \hline \\[-1em]
+        \toprule
         Part  &  Weight(kg) & Estimated\\
-        \hline
+        \midrule
         MX-28T Pro-Series Turntable Plate& 0.05 & yes\\
         MX-64T Pro-Series Single Axis kits& 0.126 & no\\
         AX Short Bracket (SSB-Short) & 0.01 & yes\\
@@ -125,7 +148,7 @@ All the other weights above the turntable must be known. Unfortunately the datas
         MX-28T Pro-Series Wrist Rotate kit & 0.127 & no\\
         Pro-Series Wrist to Dual Gripper Adapter & 0.126 & yes\\
         Dual gripper kit with two AX-12A Servos& 0.01 & yes\\
-        \hline
+        \bottomrule
     \end{tabular}
 \end{table}
 
@@ -141,14 +164,14 @@ The next thing that was necessary to find, is the different moments of inertia o
   \label{fig:naming}
 \end{figure}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Measurements of parts}
 \label{table:measurements}
     \begin{tabular}{l c c c r}
-        \hline \\[-1em]
+        \toprule
         Part  &  x - Width(meter) & y - Length(meter) & z - Height(meter)\\
-        \hline
+        \midrule
         Base & 0.1143 & 0.1143 & 0.0381\\
         Turntable & 0.055(radius) & NA & 0.01\\
         Motor2345 & 0.0356 & 0.0355 & 0.0506 \\
@@ -156,7 +179,7 @@ The next thing that was necessary to find, is the different moments of inertia o
         Girder & 0.0356 & 0.0355 & 0.0635\\
         Adapter & 0.0356 & 0.0710 & 0.0253\\
         Left/right finger & 0.03568 & 0.0089 & 0.08\\
-        \hline
+        \bottomrule
     \end{tabular}
 \end{table}
 
@@ -187,19 +210,19 @@ for the cylindrical turntable.
 
 \begin{table}[htbp]
 \centering
-\caption{Base is left out because it is fixed to the world frame and it is not neceassary to calculate this inertia}
+\caption{List of inertias. Base is left out because it is fixed to the world frame and it is not neceassary to calculate this inertia}
 \label{table:inertia}
     \begin{tabular}{l c c r}
-        \hline \\[-1em]
+        \toprule
         Part  &  $I_{xx}$ & $I_{yy}$ & $I_{zz}$\\
-        \hline
+        \midrule
         Turntable & $3.82\cdot10^{-5}$ &  $3.82\cdot10^{-5}$ &$2.27\cdot10^{-4}$\\
         Motor2345 & $4.01\cdot10^{-5}$  & $4.01\cdot10^{-5}$  & $2.65\cdot10^{-5}$ \\
         Bracket123 & $1.40\cdot10^{-6} $ & $1.40\cdot10^{-6} $ & $2.10\cdot10^{-6} $ \\
         Girder & $1.00\cdot10^{-5} $ & $1.00\cdot10^{-5} $ & $4.80\cdot10^{-6} $\\
         Adapter & $5.97\cdot10^{-5} $ & $2.00\cdot10^{-5} $ & $6.62\cdot10^{-5} $\\
         Left/right finger & $~0$ & $~0$ & $~0$\\
-        \hline
+        \bottomrule
     \end{tabular}
 \end{table}
 
@@ -208,7 +231,7 @@ The moments of inertia are very small, and axis of rotation needs to be cheked. 
 \subsection*{Constructing the robot}
 Now everything need to make the URDF file is found and the calculations needed to be done is done. The first object to be made is the base. 
 
-\begin{lstlisting}[language=xml,caption={Base}\label{lst:base}]
+\begin{lstlisting}[language=xml,caption={Base}\label{lst:base}[htbp]]
 <link name="base_link">
     <visual>
         <geometry>
@@ -232,7 +255,7 @@ Now everything need to make the URDF file is found and the calculations needed t
 
 In \lstref{lst:base} the XML based URDF code is presented. The declaration can be divided into three topics: Visual, inertal and collision. The different topics are self explanatory. The valuses chosen for the values chosen for the moment of inertia and the mass is chosen arbitrary since the based is fixed to the world and is not supposed to move. Then the turntable is modelled in the same way. Now that two links has been made in the model a joint object is needed.
 
-\begin{lstlisting}[language=xml,caption={joint between base and turntable}\label{lst:jointBTT}]
+\begin{lstlisting}[language=xml,caption={joint between base and turntable}\label{lst:jointBTT}[htbp]]
 <joint name="base_to_turntable" type="continuous">
   <parent link="base_link"/>
   <child link="turntable"/>
@@ -243,7 +266,7 @@ In \lstref{lst:base} the XML based URDF code is presented. The declaration can b
  Above in \lstref{lst:jointBTT} the joint object is given. Again it is pretty much self explanatory. The biggest challenge here is to place the turntable at the right position relative to the base and get it to rotate the way it is supposed to rotate. When placing the origin of the joint it is adjusted relavtive of the origin of the parent link. Moving the joint origin will move the origin of the child link. Therefore the join origin is set to half of the sum of the height of the two links. This will place the turntable on top of the base. The axis is the axis of rotation which is the z-axis. This was the joint for the twisting joint. The other twisting joint is modelled the same way. For the rotational joints(joint 2,3 and 4) the axis of rotation is about the x-axis relative to the its parent link. \\
  
 After all the links and joints are placed the model needs to be spawned in Gazebo. To do this a launch file is used. To start Gazebo with an empty world the following code shown in \lstref{lst:empty} is used
-\begin{lstlisting}[language=xml,caption={Start Gazebo with empty world}\label{lst:empty}]
+\begin{lstlisting}[language=xml,caption={Start Gazebo with empty world}\label{lst:empty}[htbp]]
 <include file="$(find gazebo_ros)$/launch/empty_world.launch">
   <arg name="paused" value="false"/>
   <arg name="use_sim_time" value="true"/>
@@ -253,7 +276,7 @@ After all the links and joints are placed the model needs to be spawned in Gazeb
 </include>
 \end{lstlisting}
 the last two elements are given in \lstref{lst:l2} where the first line is a script that needs to be ran since macroes is used. The second line creates the node that will spawn the robot into Gazebo. 
-\begin{lstlisting}[language=xml,caption={Spawn robot model in Gazebo}\label{lst:l2}]
+\begin{lstlisting}[language=xml,caption={Spawn robot model in Gazebo}\label{lst:l2}[htbp]]
   <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
 
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"

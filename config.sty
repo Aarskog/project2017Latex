@@ -21,7 +21,11 @@
 \usepackage{bm}
 \usepackage{svg}
 
+\usepackage{configurations/xml_config}
+
 \renewcommand{\bibname}{References}
+\renewcommand{\lstlistingname}{Code}
+
 \bibliographystyle{dcu}			  % Harvard style
 
 \onehalfspacing                   % Set 1.5 line spacing
@@ -39,4 +43,5 @@
 
 \newcommand{\figref}[1]{\figurename~\ref{#1}}
 \newcommand{\tabref}[1]{\tablename~\ref{#1}}
+\newcommand{\lstref}[1]{\lstlistingname~\ref{#1}}
 %\renewcommand{\eqref}[1]{\textup{\reftagform@{\ref{#1}}}}

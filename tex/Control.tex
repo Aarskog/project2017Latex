@@ -1,4 +1,48 @@
 \section*{Control}
+
+Now that a functioning simulation environment is created a control hierarchy is needed. The initial thought is a multivariable control on top on single joint control. The multivariable control is done in Python or Matlab. The multivariable control will use the joint positions and joint velocities to compute the desired joint torques which is sent to joint PID controllers which is handled by using ROS control package. The first thing to do is therefore to create the individual joint PID controllers. 
+To create these controllers two new files are needed. A new launch file must be created. It is possible to just append the launch file for Gazebo, but to make everything more understandable and if the package is to be used on the real robot it is easiest to make a new launch file that can be included in other launch files. The task of the control.launch file is to spawn a node which spawns all of the five controllers as 
+\begin{lstlisting}[language=xml,caption={Spawns the controller node}\label{lst:launchControl}]
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+	output="screen" ns="/five_dof_robotarm" args="joint_state_controller
+                                                base_to_turntable_controller
+                                                second_joint_controller
+                                                third_joint_controller
+                                                fourth_joint_controller
+                                                fifth_joint_controller"/>
+\end{lstlisting}
+
+
+The other file to be created is a .yaml file which is an configuration file stat states the PID parameters and what kind of controller it is. For our example the controller will be an effort controller which is a torque controller. To be able to steer the robot in Gazebo it is needed to add a transmission object for each of the joints to be controlled in the URDF file. This object can be viewed in \lstref{lst:urdfcontrol}
+
+\begin{lstlisting}[language=xml,caption={Controller object in the URDF file}\label{lst:urdfcontrol}]
+<transmission name="joint2">
+  <type>transmisson_interface/SimpleTransmission</type>
+  <actuator name="joint2_motor">
+  <!--mechanicalReduction>1</mechanicalReduction-->
+  </actuator>
+  <joint name="second_motor_to_first_bracket">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+</transmission>
+\end{lstlisting}
+
+
+
+
+A Gazebo element is also needed in the URDF file such that we dynamically link to the ROS library which will tell Gazebo what tot do. This way it is easy to interact with Gazebo via ROS. 
+
+
+\subsection*{Connect with ROS via Python and Matlab}
+What we now have done is to create a robot model described by an URDF file which we can spawn in the simulation environment Gazebo. To do control on the robot we need to know the jointpositions and joint velocites. It must also be possible to send the desired joint torques to the controllers that were specified in the yaml file. 
+
+\subsubsection*{Python}
+To communicate with the robot we need one subscriber that will listen to the joint state topic that publishes among other things the joint positions and joint velocities. 
+
+
+
+
+
 \subsection*{PD controller with gravity compensation}
     The first controller that is going to be tested is a simple PD controller with gravity compensation:
     $$
