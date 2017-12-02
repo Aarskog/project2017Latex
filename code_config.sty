@@ -1,5 +1,5 @@
 %https://gist.github.com/sebald/3130827
-\ProvidesPackage{xml_config}
+\ProvidesPackage{code_config}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -9,6 +9,42 @@
 \definecolor{lightblue}{rgb}{0.0,0.0,0.9}
 \definecolor{cyan}{rgb}{0.0,0.6,0.6}
 \definecolor{darkred}{rgb}{0.6,0.0,0.0}
+
+
+\lstset{
+    language=python,
+    tabsize=3,
+    %frame=lines,
+    caption=Test,
+    label=code:sample,
+    frame=shadowbox,
+    rulesepcolor=\color{gray},
+    xleftmargin=20pt,
+    framexleftmargin=15pt,
+    keywordstyle=\color{blue}\bf,
+    commentstyle=\color{OliveGreen},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    numbersep=5pt,
+    breaklines=true,
+    showstringspaces=false,
+    basicstyle=\footnotesize,
+    emph={str},emphstyle={\color{magenta}}}
+    %\lstinputlisting{simple.py}
+% Python style for highlighting
+%\lstset{
+%   language=Python,
+%    basicstyle=\ttm,
+%    otherkeywords={self},             % Add keywords here
+%    keywordstyle=\ttb\color{darkblue},
+%    emph={MyClass,__init__},          % Custom highlighting
+%    emphstyle=\ttb\color{darkred},    % Custom highlighting style
+%    stringstyle=\color{dkgreen},
+%    frame=tb,                         % Any extra options here
+%    showstringspaces=false            % 
+%}
+
 
 
 \lstset{

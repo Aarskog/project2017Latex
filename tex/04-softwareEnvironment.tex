@@ -31,7 +31,7 @@ When choosing a robot simulator the choice fell upon Gazebo. There were several 
 
 With Gazebo you can place a 3D model of the robot arm in a 3D scenario where you can place different other objects and for example test out different object avoidance algorithms. Gazebo comes with a good physics engine which give good simulation of the inertia and gravity impacting the robot. This is important because these are the two effects which impact the robot most. This will most likely make the transition between the simulated robot and the real robot less painful. \\
 
-It can be useful to know that Gazebo is a 
+It can be useful to know that Gazebo is a simulation tool simulates the real world with physics. RVIZ is just a visualization tool used for visualize the inputs you are sending it and does not do any simulation. 
 
 
 
@@ -48,28 +48,45 @@ It can be useful to know that Gazebo is a
 %\end{figure}
 
 
-\section{Code}
+\section{File types}
 All the code can be found at this Github repository: \href{https://github.com/Aarskog/robotarm}{\underline{rotbotarm}}\\
 
-Now that the software to be
+Now that the software to be used is found and installed the next step is to provide right tools to connect it together. Three different types of configuration files is therefore used and are listed below.
+\begin{itemize}
+    \item URDF - Describes the 3D model of the robot
+    \item YAML - Describes the joint controllers and its parameters
+    \item launch - Describes what processes to start on launch.
+\end{itemize}
+A more detailed description of the files is given in the sections below. 
 
-\subsection{Unified Robot Description Format (URDF)}
-So far the model of the manipulator has been done using a Unified Robot Description Format (URDF) file. The syntax is very easy to understand. In \figref{fig:urdf_code_example} some code for the manipulator is given. This code decribes the mounting plates on the motors where the nect link can be mounted on. 
-This particular code is a macro which means that it can be reused later in the code such that repeated code is avoided. The first part is the visuals for the plate. The mounting plate is illustrated as a box where length, width and height are specified. The next is collision which states the physical boundaries of the object. And the last is inertia where random inertia values are selected because Gazebo will not accept macroed values.
-
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=.7\textwidth]{img/urdf_code_example.png}
-  \caption{URDF-code example}
-  \label{fig:urdf_code_example}
-\end{figure}
+\subsection{Unified Robot Description Format (URDF)}\label{sec:basicURDF}
+The code used in the URDF is XML code which means that the syntax is very easy to understand. URDF consists of more, but there are two elements of the URDF that are important. The first is the link element that describes a part of the robot. In \lstref{lst:example} a link element is presented. This element describes a cylinder where the length and radius is given. 
 
 
+\begin{lstlisting}[language=xml,caption={Base},label={lst:example}]
+<link name="base_link">
+    <visual>
+        <geometry>
+            <cylinder length="0.6" radius="0.2"/>
+        </geometry>
+    </visual>
+</link>
+\end{lstlisting}
+The next important element is the joint element. When you have multiple links it is desirable to connect them together with joints. In \lstref{lst:jointexample} an example of a joint element is given. This gives the URDF parser information about how two links are connected. In this example \textit{link1} is the parent link of \textit{link2} the origin of the axes of rotation is given by the origin which is [0,0,1] which means that the origin of \textit{link2} is shifted 1 meter in the z direction relative to \textit{link2}. The joint type is revolute and it rotates about the z axis of the parent link. 
+
+\begin{lstlisting}[language=xml,caption={Base},label={lst:jointexample}]
+<joint name="joint_name" type="revolute">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="0 0 1"/>
+    <axis xyz="0 0 1"/>
+</joint>
+\end{lstlisting}
+This is the very basic for construction a object using URDF. A more detailed walkthrough is given when the method of construction of the robot is given in section \ref{sec:makingurdf}
 
 
-\subsection{YAML-file}
-In the project, the joints.yaml file is the configuration file that states the torque controller for each joint. As per now a PID controller is used for each joint. This is based on a SISO system for each joint. The dynamic equations of the manipulator is in fact a complex nonlinear and multivariable system. 
+\subsection{YAML-Yet Another Markup Language}
+In the project, the joints.yaml file is the configuration file that states the torque con-troller for each joint. As per now a PID controller is used for each joint. This is basedon a SISO system for each joint. The dynamic equations of the manipulator is in fact acomplex nonlinear and multivariable system
 
 \subsection{Launch files}
 The launch files are used for starting up Gazebo,Rviz and the different nodes. It is also used to place the robot model into the simulation environment. The controller nodes are launched form control.launch.
@@ -78,12 +95,8 @@ The launch files are used for starting up Gazebo,Rviz and the different nodes. I
 
 
 
-\subsection{Python}
-As per now a single python script is used for control of the manipulator. The task of the script is to listen to the Gazebo topic wich publishes the joint variables. 
-
-
-\section{Description of the Robot hand at hand}
-Basic information of the robot manipulator. 
+\section{Description of the robot hand at hand}
+In \figref{fig:robotAH} a picture of the actual robot is given. It is a five degrees of freedom robotic arm. Five degrees of freedom means in this case that the robot arm has five joints that we can control. In this case all the joints are rotational joints. 
 
 \begin{figure}[htbp]
   \centering
@@ -97,7 +110,9 @@ Basic information of the robot manipulator.
 The URDF includes mass and inertia as parameters which is possible to add a property of the joint. With this is mind the first to do is to find the mass of the different components that the robot at hand consists of. In \figref{fig:robotAH} for modelling and simulation the turntable base mass is not important to know since it is assumed that it is an unmoveable object that is stuck on the world frame. \\
 
 \subsection{Dviding the robot into parts}
-For the robot to be properly modelled in the URDF file the robot has to split up into different parts. This must be done because the URDF file is constructed such that you build your robot in sequence from the bottom and up by adding part by part and states where it is and how it should behave in respect to its parent part. The parent of the first part is the world frame. In table \tabref{table:partlist} the different parts from the datasheet is listed. \tabref{table:partlist} is the initial list that was used as a base for constructing the robot. And in \figref{fig:utgangspunkt} the partnames are set their respective places on the robot. 
+As briefly explained in section \ref{sec:basicURDF} the robot must be described as a series of links and joints. For the robot to be properly modelled with the URDF, it is desirable to find and classify the different parts of the robotic arm .  \\
+
+In table \tabref{table:partlist} the different parts from the datasheet is listed. \tabref{table:partlist} is the initial list that was used as a base for constructing the robot. And in \figref{fig:utgangspunkt} the partnames are set their respective places on the robot. 
 
 \begin{table}[htbp]
 \centering
@@ -226,12 +241,12 @@ for the cylindrical turntable.
     \end{tabular}
 \end{table}
 
-The moments of inertia are very small, and axis of rotation needs to be cheked. It is also unknown how the URDF reader uses the inertias and how much it is up to the user to do adjustments. 
+The moments of inertia are very small, and axis of rotation needs to be checked. It is also unknown how the URDF reader uses the inertias and how much it is up to the user to do adjustments. When construction the robot it is built in sequence from the bottom and up by adding part by part. The parent link of the first part is the world frame.
 
-\subsection*{Constructing the robot}
+\subsection*{Constructing the robot}\label{sec:makingurdf}
 Now everything need to make the URDF file is found and the calculations needed to be done is done. The first object to be made is the base. 
 
-\begin{lstlisting}[language=xml,caption={Base}\label{lst:base}[htbp]]
+\begin{lstlisting}[language=xml,caption={Base}\label{lst:base}]
 <link name="base_link">
     <visual>
         <geometry>
@@ -255,7 +270,7 @@ Now everything need to make the URDF file is found and the calculations needed t
 
 In \lstref{lst:base} the XML based URDF code is presented. The declaration can be divided into three topics: Visual, inertal and collision. The different topics are self explanatory. The valuses chosen for the values chosen for the moment of inertia and the mass is chosen arbitrary since the based is fixed to the world and is not supposed to move. Then the turntable is modelled in the same way. Now that two links has been made in the model a joint object is needed.
 
-\begin{lstlisting}[language=xml,caption={joint between base and turntable}\label{lst:jointBTT}[htbp]]
+\begin{lstlisting}[language=xml,caption={joint between base and turntable},label={lst:jointBTT}]
 <joint name="base_to_turntable" type="continuous">
   <parent link="base_link"/>
   <child link="turntable"/>
@@ -266,7 +281,7 @@ In \lstref{lst:base} the XML based URDF code is presented. The declaration can b
  Above in \lstref{lst:jointBTT} the joint object is given. Again it is pretty much self explanatory. The biggest challenge here is to place the turntable at the right position relative to the base and get it to rotate the way it is supposed to rotate. When placing the origin of the joint it is adjusted relavtive of the origin of the parent link. Moving the joint origin will move the origin of the child link. Therefore the join origin is set to half of the sum of the height of the two links. This will place the turntable on top of the base. The axis is the axis of rotation which is the z-axis. This was the joint for the twisting joint. The other twisting joint is modelled the same way. For the rotational joints(joint 2,3 and 4) the axis of rotation is about the x-axis relative to the its parent link. \\
  
 After all the links and joints are placed the model needs to be spawned in Gazebo. To do this a launch file is used. To start Gazebo with an empty world the following code shown in \lstref{lst:empty} is used
-\begin{lstlisting}[language=xml,caption={Start Gazebo with empty world}\label{lst:empty}[htbp]]
+\begin{lstlisting}[language=xml,caption={Start Gazebo with empty world},label={lst:empty}]
 <include file="$(find gazebo_ros)$/launch/empty_world.launch">
   <arg name="paused" value="false"/>
   <arg name="use_sim_time" value="true"/>
@@ -276,7 +291,7 @@ After all the links and joints are placed the model needs to be spawned in Gazeb
 </include>
 \end{lstlisting}
 the last two elements are given in \lstref{lst:l2} where the first line is a script that needs to be ran since macroes is used. The second line creates the node that will spawn the robot into Gazebo. 
-\begin{lstlisting}[language=xml,caption={Spawn robot model in Gazebo}\label{lst:l2}[htbp]]
+\begin{lstlisting}[caption={Spawn robot model in Gazebo},label={lst:l2},language=xml]
   <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
 
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"

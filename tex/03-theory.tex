@@ -1,8 +1,10 @@
-\chapter{Theory}
+\chapter{Kinematics, Inverse Kinematics and Control}
 
 Now that a functioning simulation environment is created a control hierarchy is needed. The initial thought is a multivariable control on top on single joint control. The multivariable control is done in Python or Matlab. The multivariable control will use the joint positions and joint velocities to compute the desired joint torques which is sent to joint PID controllers which is handled by using ROS control package. The first thing to do is therefore to create the individual joint PID controllers. 
-To create these controllers two new files are needed. A new launch file must be created. It is possible to just append the launch file for Gazebo, but to make everything more understandable and if the package is to be used on the real robot it is easiest to make a new launch file that can be included in other launch files. The task of the control.launch file is to spawn a node which includes all of the five controllers
-\begin{lstlisting}[language=xml,caption={Spawns the controller node}\label{lst:launchControl}]
+To create these controllers two new files are needed. A new launch file must be created. It is possible to just append the launch file, but to make everything more understandable and if the package is to be used on the real robot it is easier to make a new launch file that can be included in other launch files. The task of the control.launch file is to spawn a node which includes all of the five controllers. In \lstref{lst:launchControl} one can see the the code to spawn the controllers. It consists of two statements. The first is loading the parameters of the controllers from the YAML file. Then with the parameters loaded, a node is created and it makes the joint controller services that the wanted joint torques can be published to. 
+\begin{lstlisting}[language=xml,caption={Spawns the controller node},label={lst:launchControl}]
+<rosparam file="$(find five_dof_robotarm)/config/joints.yaml" command="load"/>
+
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
 	output="screen" ns="/five_dof_robotarm" args="joint_state_controller
     base_to_turntable_controller
@@ -11,74 +13,98 @@ To create these controllers two new files are needed. A new launch file must be 
     fourth_joint_controller
     fifth_joint_controller"/>
 \end{lstlisting}
+Below in \lstref{lst:pythonPubl} one can see how the publishers that will publish the desired joint torques calculated by the controller. 
+\begin{lstlisting}[language=python,caption={Python code for creating the publishers.},label={lst:pythonPubl}]
+#Define publishers for each joint position controller commands.
+pub1 = rospy.Publisher('/five_dof_robotarm/first_joint_controller/command', Float64, queue_size=10)
+pub2 = rospy.Publisher('/five_dof_robotarm/second_joint_controller/command', Float64, queue_size=10)
+pub3 = rospy.Publisher('/five_dof_robotarm/third_joint_controller/command', Float64, queue_size=10)
+pub4 = rospy.Publisher('/five_dof_robotarm/fourth_joint_controller/command', Float64, queue_size=10)
+pub5 = rospy.Publisher('/five_dof_robotarm/fifth_joint_controller/command', Float64, queue_size=10)
+\end{lstlisting}
 
+And how to publish the wanted torques is seen below in \lstref{lst:pythonPubs}. Here $u$ is the vector of the controller output. During the project it was also wanted to do the same in Matlab and the initial thought is the same and can be viewed in the appendix. 
+
+\begin{lstlisting}[language=python,caption={Python code for publish wanted torques},label={lst:pythonPubs}]
+pub1.publish(u[0,0])
+pub2.publish(u[1,0])
+pub3.publish(u[2,0])
+pub4.publish(u[3,0])
+pub5.publish(u[4,0])
+\end{lstlisting}
+
+Another important functionallity to do control is to get the feedback from Gazebo with joint position and joint velocities. To do this a subscriber is needed. The subscriber can thought of as the opposite as the publisher. Instead of publishing values to a service, we now want to listen to a service. 
 
 
 \section{Control}
+
 \subsection{PD controller with gravity compensation}
-    The controller that is going to be used is a simple PD controller with gravity compensation inspired by \cite{spong}:
-    $$
-        u=K_p\tilde{q} - K_d\dot{q} +g(q)
-    $$
-     where $\tilde{q} = q_d - q$ and 
-     \begin{align}\label{eq:gravity}
-     g(q) = \frac{\partial P}{\partial q_k}
-     \end{align}
 
-     
-     and the total potential energy for a n-link robot is $P = \sum^n_{i=1}P_i$. Where $P_i$ is the potential energy for each individual link. For this specific manipulator the center of mass is assumed in the geometric center of each link. 
-     \\
-     Using figure \figref{draw:pot-rob} to calculate the potential energies:
-
-     
-     \begin{align*}
-        P_1 &= 0
-        \\
-        P_2 &= m_2g\frac{L_2}{2}\sin{(q_2)}
-        \\
-        P_3 &= m_3g\left( L_2 \sin{(q_2)} + \frac{L_3}{2}\sin{(q_2 + q_3)} \right)
-        \\
-        P_4 &= m_4g\left( L_2 \sin{(q_2)} + L_3\sin{(q_2 + q_3)} + \frac{L_4}{2}\sin{(q_2+q_3+q_4)} \right)
-        \\
-        P_5 &= m_5g\left( L_2 \sin{(q_2)} + L_3\sin{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)} \right)
-        \\
-        P &= P_1 + P_2 + P_3 + P_4 + P_5
-     \end{align*}
-
-     $L_4$ is the part up to the rotational joint. $L_5$ and $m_5$ is the rotational joint and the gripper together. To calculate individual gravity components we are using \eqref{eq:gravity}
-
-     \begin{align*}
-        g_1 &= 0
-        \\
-        g_2 &= \frac{\partial P}{\partial q_2} = 
-        m_2g\frac{L_2}{2}\cos{(q_2)}+
-        m_3g\left( L_2 \cos{(q_2)} + \frac{L_3}{2}\cos{(q_2+q_3)} \right)\\&+
-        m_4g\left( L_2 \cos{(q_2)} + L_3\cos{(q_2 + q_3)} + \frac{L_4}{2}\cos{(q_2+q_3+q_4)} \right)\\&+
-        m_5g\left( L_2 \cos{(q_2)} + L_3\cos{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\cos{(q_2+q_3+q_4)} \right)
-        \\
-        g_3 &= \frac{\partial P}{\partial q_3} =
-        m_3g\frac{L_3}{2}\cos{(q_2+q_3)} +
-        m_4g\left( L_3\cos{(q_2 + q_3)} + \frac{L_4}{2}\cos{(q_2+q_3+q_4)} \right)\\&+
-        m_5g\left(  L_3\cos{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\cos{(q_2+q_3+q_4)} \right)
-        \\
-        g_4 &=\frac{\partial P}{\partial q_4} = 
-        m_4g\frac{L_4}{2}\cos{(q_2+q_3+q_4)}+
-        m_5g\left(L_4 + \frac{L_5}{2} \right)\cos{(q_2+q_3+q_4)}
-        \\
-        g_5 &= 0
-        \\
-        g(q) &= [g_1,g_2,g_3,g_4,g_5]^T
-     \end{align*}
-
-NOTE to self: Since the manipulator zero position is straight upwards this calculation is wrong. Replace sin with cos and vice versa. Remember signs. 
+The controller that is going to be used is a simple PD controller with gravity compensation derived by \cite{spong}:
+$$
+    u=K_p\tilde{q} - K_d\dot{q} +g(q)
+$$
+ where $\tilde{q} = q_d - q$ and 
+ \begin{align}\label{eq:gravity}
+ g(q) = \frac{\partial P}{\partial q_k}
+ \end{align}
+ where the total potential energy for a n-link robot is $P = \sum^n_{i=1}P_i$. Where $P_i$ is the potential energy for each individual link. For this specific manipulator the center of mass is assumed in the geometric center of each link. In \cite{Siciliano} this controller is proven by using Lyapunov direct method to be globally asymptotically stable(GAS) as long as $K_d$ and $K_p$ is positive definite. It is important to keep in mind that if the online computing of $g(q)$ is not perfect, the statement of GAS does not hold. Based on the assumptions made, the controller can not guarantee GAS. 
+ 
+ \subsection{Deriving the gravitational effect}
+ The robot at hand starts and ends with twisting joints and only the three joints in the middle is rotational joints. This means that the potential energy is only dependent on $q_2$,$q_3$ and $q_4$ which makes calculating the potential energy a bit a easier. Because of this, the potential energy can be calculated by making a 2D sketch as shown in \figref{draw:pot-rob}.
 
 \begin{figure}[htbp]
     \centering
     \input{tex/drawing/robotarm.tex}
-    \caption{Figure of the robot. The twisting joints are left out}
+    \caption{Sketch of the robot the three middle joints of the robot}
     \label{draw:pot-rob}
 \end{figure}
+     
+In \eqref{eq:potE} the potential energy is calculated for each link in the robot. 
+ \begin{align}
+    \begin{split}\label{eq:potE}
+        P_1 &= m_1g\frac{L_1}{2}
+        \\
+        P_2 &= m_2g\left(L_1 + \frac{L_2}{2}\cos{(q_2)}\right)
+        \\
+        P_3 &= m_3g\left(L_1 +  L_2 \cos{(q_2)} + \frac{L_3}{2}\cos{(q_2 + q_3)} \right)
+        \\
+        P_4 &= m_4g\left(L_1 +  L_2 \cos{(q_2)} + L_3\cos{(q_2 + q_3)} + \frac{L_4}{2}\cos{(q_2+q_3+q_4)} \right)
+        \\
+        P_5 &=m_5g\left(L_1 +  L_2 \cos{(q_2)} + L_3\cos{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\cos{(q_2+q_3+q_4)} \right)
+        \\
+        P &= P_1 + P_2 + P_3 + P_4 + P_5
+    \end{split}   
+ \end{align}    
 
+
+ Where $L_4$ is the part up to the rotational joint. $L_5$ and $m_5$ is the rotational joint and the gripper together.  \\
+ 
+ And then, to calculate individual gravity components equation \eqref{eq:gravity} is used on \eqref{eq:potE}:
+
+ \begin{align*}
+    g_1 &= 0
+    \\
+    g_2 &= \frac{\partial P}{\partial q_2} = 
+    m_2g\frac{L_2}{2}\sin{(q_2)}+
+    m_3g\left( L_2 \sin{(q_2)} + \frac{L_3}{2}\sin{(q_2+q_3)} \right)\\&+
+    m_4g\left( L_2 \sin{(q_2)} + L_3\sin{(q_2 + q_3)} + \frac{L_4}{2}\sin{(q_2+q_3+q_4)} \right)\\&+
+    m_5g\left( L_2 \sin{(q_2)} + L_3\sin{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)} \right)
+    \\
+    g_3 &= \frac{\partial P}{\partial q_3} =
+    m_3g\frac{L_3}{2}\sin{(q_2+q_3)} +
+    m_4g\left( L_3\sin{(q_2 + q_3)} + \frac{L_4}{2}\sin{(q_2+q_3+q_4)} \right)\\&+
+    m_5g\left(  L_3\sin{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)} \right)
+    \\
+    g_4 &=\frac{\partial P}{\partial q_4} = 
+    m_4g\frac{L_4}{2}\sin{(q_2+q_3+q_4)}+
+    m_5g\left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)}
+    \\
+    g_5 &= \frac{\partial P}{\partial q_5} = 0
+    \\
+    g(q) &= [g_1,g_2,g_3,g_4,g_5]^T
+ \end{align*}
+This is the force that each joint will \textit{feel} from the other links and the controller will therefor compensate for this disturbance. 
 
 \subsubsection{Tests with step response(OUTDATED).}
 In \figref{fig:testkp1} and \figref{fig:testkp2} the step response for the joint angles are plotted. \figref{fig:testkp1} is the joint angles when $kp = 1$ for the rotational joints ($q_2$ to $q_4$) and $kp = 1.5$ for the twist joints.  \figref{fig:testkp2} is the joint angles when $kp = 2$ for the rotational joints and $kp = 1.5$ for the twist joints. From the plots one can see that with a $kp$ bigger than $2$ will lead to unwanted oscillations. $kp = 1$ looks like the best choice for this controller so far. Keep in mind that this is the step response. The next step will be to make a spline to such that the steps are not so big. $kd = 0.9$ for the rotational joints bigger than this will cause weird oscillations.

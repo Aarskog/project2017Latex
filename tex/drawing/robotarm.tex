@@ -4,10 +4,6 @@
 
 \usetikzlibrary{patterns}
 
-
-
-
-
 \newcommand{\nvar}[2]{%
     \newlength{#1}
     \setlength{#1}{#2}
@@ -44,11 +40,12 @@
 %   \angann{30}{$\theta_1$}
 \newcommand{\angann}[2]{%
     \begin{scope}[red]
+    \draw [dashed, red] (0,0) -- (0pt,1.2\ddx);
     \draw [dashed, red] (0,0) -- (1.2\ddx,0pt);
-    \draw [->, shorten >=3.5pt] (\ddx,0pt) arc (0:#1:\ddx);
+    \draw [->, shorten >=3.5pt] ((0,\ddx) arc (90:#1:\ddx);
     % Unfortunately automatic node placement on an arc is not supported yet.
     % We therefore have to compute an appropriate coordinate ourselves.
-    \node at (#1/2-2:\ddx+8pt) {#2};
+    \node at (#1*2+2:\ddx-8pt) {#2};
     \end{scope}
 }
 
@@ -75,14 +72,14 @@
 \def\Lone{2}
 \def\thetatwo{30}
 \def\Ltwo{1}
-\def\thetathree{30}
+\def\thetathree{40}
 \def\Lthree{1}
 
 
 \begin{tikzpicture}
-    \robotbase
+    %\robotbase
     \angann{\thetaone}{$q_2$}
-    \lineann[0.7]{\thetaone}{\Lone}{$L_2$}
+    \lineann[-1]{\thetaone}{\Lone}{$L_2$}
     \link(\thetaone:\Lone);
     \joint
     \begin{scope}[shift=(\thetaone:\Lone), rotate=\thetaone]
@@ -92,12 +89,12 @@
         \joint
         \begin{scope}[shift=(\thetatwo:\Ltwo), rotate=\thetatwo]
             \angann{\thetathree}{$q_4$}
-            \lineann[0.7]{\thetathree}{\Lthree}{$L_4$}
+            \lineann[-1]{\thetathree}{\Lthree}{$L_4$}
             \draw [dashed, red,rotate=\thetathree] (0,0) -- (1.2\ddx,0pt);
             \link(\thetathree:\Lthree);
             \joint
             \begin{scope}[shift=(\thetathree:\Lthree), rotate=\thetathree]
-                \grip
+                %\grip
             \end{scope}
         \end{scope}
     \end{scope}
