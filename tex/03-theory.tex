@@ -51,7 +51,7 @@ $$
  where the total potential energy for a n-link robot is $P = \sum^n_{i=1}P_i$. Where $P_i$ is the potential energy for each individual link. For this specific manipulator the center of mass is assumed in the geometric center of each link. In \cite{Siciliano} this controller is proven by using Lyapunov direct method to be globally asymptotically stable(GAS) as long as $K_d$ and $K_p$ is positive definite. It is important to keep in mind that if the online computing of $g(q)$ is not perfect, the statement of GAS does not hold. Based on the assumptions made, the controller can not guarantee GAS. 
  
  \subsection{Deriving the gravitational effect}
- The robot at hand starts and ends with twisting joints and only the three joints in the middle is rotational joints. This means that the potential energy is only dependent on $q_2$,$q_3$ and $q_4$ which makes calculating the potential energy a bit a easier. Because of this, the potential energy can be calculated by making a 2D sketch as shown in \figref{draw:pot-rob}.
+ The robot at hand starts and ends with twisting joints and only the three joints in the middle is rotational joints. This means that the potential energy is only dependent on $q_2$,$q_3$ and $q_4$ which makes calculating the potential energy a bit a easier. Because of this, the potential energy can be calculated by using a 2D sketch as shown in \figref{draw:pot-rob}.
 
 \begin{figure}[htbp]
     \centering
@@ -104,23 +104,43 @@ In \eqref{eq:potE} the potential energy is calculated for each link in the robot
     \\
     g(q) &= [g_1,g_2,g_3,g_4,g_5]^T
  \end{align*}
-This is the force that each joint will \textit{feel} from the other links and the controller will therefor compensate for this disturbance. 
+This is the gravity components that each joint will \textit{feel} from the other links and by adding this to a PD controller it will compensate for this disturbance. 
 
-\subsubsection{Tests with step response(OUTDATED).}
-In \figref{fig:testkp1} and \figref{fig:testkp2} the step response for the joint angles are plotted. \figref{fig:testkp1} is the joint angles when $kp = 1$ for the rotational joints ($q_2$ to $q_4$) and $kp = 1.5$ for the twist joints.  \figref{fig:testkp2} is the joint angles when $kp = 2$ for the rotational joints and $kp = 1.5$ for the twist joints. From the plots one can see that with a $kp$ bigger than $2$ will lead to unwanted oscillations. $kp = 1$ looks like the best choice for this controller so far. Keep in mind that this is the step response. The next step will be to make a spline to such that the steps are not so big. $kd = 0.9$ for the rotational joints bigger than this will cause weird oscillations.
+\subsubsection{Test of controller}
+Now that a controller is in place it is time to test it. The first thing to test is the gravity compensation. The best way to view the results is to watch the robot it is in a stationary state the only input that are sent into the individual joint torque controllers should be the data computed only by the gravity compensation part. Some random desired joint angles is chosen and the following results can be viewed in \tabref{table:gravity}.\\
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=.9\textwidth]{img/joingangKp1.eps}
-  \caption{}
-  \label{fig:testkp1}
-\end{figure}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=.9\textwidth]{img/joingangKp2.eps}
-  \caption{}
-  \label{fig:testkp2}
-\end{figure}
+\begin{table}[htbp]
+\centering
+\caption{Test results of the precision of the gravity compensation}
+\label{table:gravity}
+    \begin{tabular}{l c c r}
+        \toprule
+        Joint  &  $g_i$ & $u_i$ & $u_i-g_i$\\
+        \midrule
+        1 & 0 & 0 & 0\\
+        2 & -0.7720  & -0.7760  & -0.0040 \\
+        3 &-0.4226 & -0.4191 & 0.0035 \\
+        4 & -0.1870 &-0.1871 & -0.0001\\
+        5 & 0 & 0 & 0\\
+        \bottomrule
+    \end{tabular}
+\end{table}
+ One can see that the results are good. One can see that the PD part of the controller must some work which means that the end effector will not be completely at its desired position. The biggest error is in the second joint and for this configuration $0.0022 rad = 0.1261 deg$ which corresponds to an error of $0.0003$ in the xyz world frame. \\
+ 
+Now that we know that the gravity compensation is working one can start to test the controller. The gain matrices $K_p$ and $K_d$ are implemented as positive definite diagonal matrices.
+
+%\begin{figure}[htbp]
+%  \centering
+%  \includegraphics[width=.9\textwidth]{img/joingangKp1.eps}
+%  \caption{}
+%  \label{fig:testkp1}
+%\end{figure}
+%\begin{figure}[htbp]
+%  \centering
+%  \includegraphics[width=.9\textwidth]{img/joingangKp2.eps}
+%  \caption{}
+%  \label{fig:testkp2}
+%\end{figure}
 
 \subsection{More improvements that should be included}
 
