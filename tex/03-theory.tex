@@ -125,30 +125,49 @@ Now that a controller is in place it is time to test it. The first thing to test
         \bottomrule
     \end{tabular}
 \end{table}
+
  One can see that the results are good. One can see that the PD part of the controller must some work which means that the end effector will not be completely at its desired position. The biggest error is in the second joint and for this configuration $0.0022 rad = 0.1261 deg$ which corresponds to an error of $0.0003$ in the xyz world frame. \\
  
-Now that we know that the gravity compensation is working one can start to test the controller. The gain matrices $K_p$ and $K_d$ are implemented as positive definite diagonal matrices.
+Now that we know that the gravity compensation is working we can start to test the controller. The gain matrices $K_p$ and $K_d$ are implemented as positive definite diagonal matrices.
 
-%\begin{figure}[htbp]
-%  \centering
-%  \includegraphics[width=.9\textwidth]{img/joingangKp1.eps}
-%  \caption{}
-%  \label{fig:testkp1}
-%\end{figure}
-%\begin{figure}[htbp]
-%  \centering
-%  \includegraphics[width=.9\textwidth]{img/joingangKp2.eps}
-%  \caption{}
-%  \label{fig:testkp2}
-%\end{figure}
+\begin{figure*}[htbp]
+    \centering
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = 1.15\linewidth]{img/LSq.eps}
+        \caption{cap5}
+        \label{fig:LSq}
+    \end{subfigure}
+    ~ 
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = 1.15\linewidth]{img/LSerror.eps}
+        \caption{cap4}
+    \end{subfigure}
+    ~
+    \centering
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = 1.15\linewidth]{img/LSqdot.eps}
+        \caption{cap3}
+    \end{subfigure}
+    ~ 
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = 1.15\linewidth]{img/LSu.eps}
+        \caption{cap2}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = 1.15\linewidth]{img/LSgrav.eps}
+        \caption{cap4}
+    \end{subfigure}
+    \caption{CaP1}
+    \label{fig:LS}
+\end{figure*}
 
-\subsection{More improvements that should be included}
-
-
-
-
-
-
+In \figref{fig:LS} different data is plotted from a random configuration to a some kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking some overshoot is therefore accepted for this case. By looking at the plots, the results looks good. One thing that could be better is the joint velocity of last joint which seems a bit unstable. Additional tuning to try to avoid the ugly input and joint velocity of the fifth joint results in slow convergence of the joint angle. Since the moments of inertia is very low and Gazebo handles low inertias very bad, so this effect is assumed to be because of this and the when implementing this on the real robot it is expected that this effect will not be a problem. From \figref{fig:LSq} one can see $q_5$ converges rather smooth and the gains will be used for further testing. It may be worth to mention that when doing setpoint tracking the steps are not that large and the gains can be altered for better performance.  
 
 
 
