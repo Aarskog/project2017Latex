@@ -241,7 +241,7 @@ for the cylindrical turntable.
     \end{tabular}
 \end{table}
 
-The moments of inertia are very small, and axis of rotation needs to be checked. It is also unknown how the URDF reader uses the inertias and how much it is up to the user to do adjustments. When construction the robot it is built in sequence from the bottom and up by adding part by part. The parent link of the first part is the world frame.
+The moments of inertia are very small, and axis of rotation needs to be checked. It is also unknown how the URDF reader uses the inertia and how much it is up to the user to do adjustments. When construction the robot it is built in sequence from the bottom and up by adding part by part. The parent link of the first part is the world frame.
 
 \subsection*{Constructing the robot}\label{sec:makingurdf}
 Now everything need to make the URDF file is found and the calculations needed to be done is done. The first object to be made is the base. 
@@ -298,7 +298,7 @@ the last two elements are given in \lstref{lst:l2} where the first line is a scr
         args="-z 0.01905 -pause -urdf -model robot -param robot_description" respawn="false" output="screen" />
 \end{lstlisting}
 
-In \figref{fig:stiff} the result is presented. As one can see in \figref{fig:flaccid} the robot arm will just fall to the ground when the simulation is started. This is of course expected since no joint control has been added yet. In the next chapter the method of doing control will be presented. 
+In \figref{fig:RG} the result is presented. As one can see in \figref{fig:flaccid} the robot arm will just fall to the ground when the simulation is started. This is of course expected since no joint control has been added yet. In the next chapter the method of doing control will be presented. 
 
 \begin{figure}[htbp]
   \centering
@@ -307,11 +307,21 @@ In \figref{fig:stiff} the result is presented. As one can see in \figref{fig:fla
   \label{fig:flaccid}
 \end{figure}
 
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[height=.7\textheight]{img/robotGazUP.png}
-  \caption{Screenshot of the robot spawned in Gazebo}
-  \label{fig:stiff}
-\end{figure}
-
+\begin{figure*}[htbp]
+    \centering
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = 1\linewidth]{img/robotGazUP.png}
+        \caption{The robot arm visualized in Gazebo}
+        \label{fig:robgaz}
+    \end{subfigure}
+    ~ 
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = 1\linewidth, height = 0.705\textheight]{img/rvizRass.png}
+        \caption{The robot arm visualized in RViz}
+        \label{fig:robviz}
+    \end{subfigure}
+    \caption{The robot arm visualized in Gazebo and RViz}
+    \label{fig:RG}
+\end{figure*}
