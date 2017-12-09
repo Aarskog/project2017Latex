@@ -301,7 +301,121 @@ now we got everything needed to compute the geometric Jacobian and the result is
 which has the full rank of $5$. 
 
 
-\section{Inverse Kinematics(outdated)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Inverse Kinematics}
+
+As we already know, the forward kinematics establishes the relationship between the joint variables and the position and orientation of the end effector. The problem of inverse kinematics is to find the joint variables when the position and orientation of the end effector is given. This is wanted because the wanted position or trajectory is given in the Cartesian world frame. Unfortunately the inverse kinematics problem is not as easy and straight forward as the forward kinematics problem. \cite{Siciliano} lists up several reasons the inverse kinematics problem is so much more complex:
+\begin{itemize}
+    \item The equations to solve are in general nonlinear, and thus it is not always possible to find a closed-form solution.
+    \item Multiple solutions may exist.
+    \item Infinite solutions may exist, e.g., in the case of a kinematically redundant manipulator.
+    \item There might be no admissible solutions, in view of the manipulator kinematic structure.
+\end{itemize}
+There are different methods of solving the inverse kinematics problem. One way to solve it is to solve it algebraically. Ideally you want a function that has the orientation and position as input and then gives the respective joint angles. In our case where we have a 5 DOF robot arm the equations becomes too large and too difficult to solve, \cite{spong}. By looking at the equation $T_5^0=H$ where $T_5^0$ is given in \eqref{eq:T5} and $H$ is the desired transformation matrix of the end effector. It shows us that it gives a complex set of equations to solve. Another thing that must be consideres is that not all joints in our system can rotate 360 degrees either so if a solution is to be found it may not work because of the limitations of the robot manipulator. \\
+
+It is also possible to use a geometric approach where the thought is to find the joint angels by projecting the manipulator onto the previous plane[\cite{spong}] and solve it using trigonometry. Both \cite{spong} and \cite{Siciliano} uses simple manipulators and special cases where simplifications can be made. \\
+
+After some research in making a inverse kinematics solver from the bottom and up with constraints and everything, it was found that this will not yield satisfactory results. The choice was therefore to use an already existing solver. Many solvers did not support a 5 DOF robot manipulator, but after some research the choice fell upon a MATLAB robotics toolbox(https://se.mathworks.com/help/robotics/). The toolbox makes a great interface with ROS which makes it easy to create subscribers and listeners here as well. A useful part is that it is possible to include the URDF file where MATLAB creates a robot object and represent the robot manipulator as something called rigid body tree. In other words it is just the way MATLAB parses the URDF file. In \figref{fig:showRovs} the MATLAB function $show(robot)$ is used and you can see the visualization of the robot. This can be used to check solutions and it can be though as a simpler version of RViz. The right finger is shifted to the center to use it as a inverse kinematics reference point. 
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.9\textwidth]{img/showRobs.eps}
+  \caption{MATLAB visualization of the robot using URDF}
+  \label{fig:showRovs}
+\end{figure}
+
+In \lstref{lst:robotinit} seen below the robot object is created. The inverse kinematics solver object is also created. The initial solver of the inverse kinematics problem is the \textit{Broyden–Fletcher–Goldfarb–Shanno} (BFGS) algorithm which is an iterative, gradient-based optimization method that start with an initial guess to minimize a cost function \cite{MatlabRobTool}. The other solving algorith is the \textit{Levenberg-Marquardt} algorithm which is not as good if you only have the home configuration of the robot, but it is faster. So if you are to follow a path it could be a good choice to use \textit{Levenberg-Marquardt}. 
+
+\begin{lstlisting}[caption={MATLAB code of creating a invrerse kinematics},label={lst:robotinit},language=Matlab]
+robot = importrobot('robot.urdf');
+ik = robotics.GeneralizedInverseKinematics('RigidBodyTree',robot);
+ik.ConstraintInputs={'joint','position','orientation'};
+ik.SolverParameters.SolutionTolerance = 0.00001;
+ik.SolverParameters.GradientTolerance = 0.000001;
+ik.SolverParameters.MaxTime = 0.1;
+ik.SolverParameters.AllowRandomRestart = 0;
+\end{lstlisting}
+
+The \lstref{lst:gik} show an example of finding the inverse kinematics. Here we want the end effector denoted 'right finger' which was moved to the center for a reference point, to reach the position $pd$ with the orientation $od$. It is also wanted to have some constraints such that the solution is at a feasible configuration which is seen at line 6 to 10. Again the datasheets does not state the operational limits of the joints 2,3 and 4, so the bounds has been guessed. The bounds of the twisting joints 1 and 5 are set to $\pm \pi$ to avoid solutions past these bounds. 
+
+\begin{lstlisting}[caption={MATLAB code of creating a inverse kinematics},label={lst:gik},language=Matlab]
+posTgt = robotics.PositionTarget('right_finger');
+posTgt.TargetPosition = pd';
+orTgt = robotics.OrientationTarget('right_finger');
+orTgt.TargetOrientation = eul2quat(od');
+jointConst = robotics.JointPositionBounds(robot);
+jointConst.Bounds = [-pi,pi;
+                -3*pi/4,3*pi/4
+                -3*pi/4,3*pi/4
+                -3*pi/4,3*pi/4
+                -pi,pi];
+initialguess = robot.homeConfiguration;
+[configSoln,solInfo] = ik(initialguess,jointConst,posTgt,orTgt);
+qd = [configSoln(:).JointPosition]';
+\end{lstlisting}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{comment}
+
+
 \cite{Siciliano} states that one can use the Jacobian of the system to calculate the inverse kinematics:
 
 \begin{align}\label{eq:algo}
@@ -383,7 +497,12 @@ The determinant of $\bm{T}$ is $-s_\theta$ which means that one cannot invert fo
 
 
 
-%\begin{comment}
+
+\section{Motion planning}
+
+
+
+
 If the desired position is $p$ and the desired orientation is $R$. Then in \cite{Kinematics}, the inverse kinematics are given as: 
 
 \begin{align*}
@@ -396,9 +515,5 @@ If the desired position is $p$ and the desired orientation is $R$. Then in \cite
 
 where $a = d_1 - d_5c_{234}-p_z$, $b = p_xc_1 + p_ys_1+d_5s_{234}$ and $-\frac{\pi}{2}<q_1 < \frac{\pi}{2}$. $q_{234} = atan2\left(\frac{p_x}{c_1p_x+s_1p_y})\right)$
 
-%\cite{Siciliano}
-%\end{comment}
 
-
-\section{Inverse Kinematics}
-\section{Motion planning}
+\end{comment}

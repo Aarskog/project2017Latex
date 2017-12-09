@@ -130,37 +130,38 @@ Now that a controller is in place it is time to test it. The first thing to test
  
 Now that we know that the gravity compensation is working we can start to test the controller. The gain matrices $K_p$ and $K_d$ are implemented as positive definite diagonal matrices.
 
+\def\picsSiz{1.08}
 \begin{figure*}[htbp]
     \centering
     \begin{subfigure}[htbp]{0.45\textwidth}
         \centering
-        \includegraphics[width = 1.15\linewidth]{img/LSq.eps}
+        \includegraphics[width = \picsSiz\linewidth]{img/LSq.eps}
         \caption{ }
         \label{fig:LSq}
     \end{subfigure}
     ~ 
     \begin{subfigure}[htbp]{0.45\textwidth}
         \centering
-        \includegraphics[width = 1.15\linewidth]{img/LSerror.eps}
+        \includegraphics[width = \picsSiz\linewidth]{img/LSerror.eps}
         \caption{ }
     \end{subfigure}
     ~
     \centering
     \begin{subfigure}[htbp]{0.45\textwidth}
         \centering
-        \includegraphics[width = 1.15\linewidth]{img/LSqdot.eps}
+        \includegraphics[width = \picsSiz\linewidth]{img/LSqdot.eps}
         \caption{ }
     \end{subfigure}
     ~ 
     \begin{subfigure}[htbp]{0.45\textwidth}
         \centering
-        \includegraphics[width = 1.15\linewidth]{img/LSu.eps}
+        \includegraphics[width = \picsSiz\linewidth]{img/LSu.eps}
         \caption{ }
     \end{subfigure}
     ~
     \begin{subfigure}[htbp]{0.45\textwidth}
         \centering
-        \includegraphics[width = 1.15\linewidth]{img/LSgrav.eps}
+        \includegraphics[width = \picsSiz\linewidth]{img/LSgrav.eps}
         \caption{ }
     \end{subfigure}
     \caption{Different plots of recorded data when a large step in desired joint angles is introduced}
