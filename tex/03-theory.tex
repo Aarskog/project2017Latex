@@ -1,6 +1,6 @@
 \chapter{Control}
 
-Now that a functioning simulation environment is created a control hierarchy is needed. The initial thought is a multivariable control on top on single joint control. The multivariable control is done in Python or Matlab. The multivariable control will use the joint positions and joint velocities to compute the desired joint torques which is sent to joint PID controllers which is handled by using ROS control package. The first thing to do is therefore to create the individual joint PID controllers. 
+Now that a functioning simulation environment is created and a inverse kinematics solver is created it is time to connect these to and create a controller to steer the robot manipulator. The initial thought is a multivariable control on top on single joint control. The multivariable control is done in Matlab, but it can be done in Python as well, but since the inverse kinematics problem is solved in MATLAB it is easiest to do the control in MATLAB. The multivariable control will use the joint positions and joint velocities to compute the desired joint torques which is sent to joint PID controllers which is handled by using ROS control package. The first thing to do is therefore to create the individual joint PID controllers. 
 To create these controllers two new files are needed. A new launch file must be created. It is possible to just append the launch file, but to make everything more understandable and if the package is to be used on the real robot it is easier to make a new launch file that can be included in other launch files. The task of the control.launch file is to spawn a node which includes all of the five controllers. In \lstref{lst:launchControl} one can see the the code to spawn the controllers. It consists of two statements. The first is loading the parameters of the controllers from the YAML file. Then with the parameters loaded, a node is created and it makes the joint controller services that the wanted joint torques can be published to. 
 \begin{lstlisting}[language=xml,caption={Spawns the controller node},label={lst:launchControl}]
 <rosparam file="$(find five_dof_robotarm)/config/joints.yaml" command="load"/>
@@ -13,7 +13,16 @@ To create these controllers two new files are needed. A new launch file must be 
     fourth_joint_controller
     fifth_joint_controller"/>
 \end{lstlisting}
-Below in \lstref{lst:pythonPubl} one can see how the publishers that will publish the desired joint torques calculated by the controller. 
+Below in \lstref{lst:matlabPubl} one can see how the publishers that will publish the desired joint torques calculated by the controller. 
+\begin{lstlisting}[language=Matlab,caption={MATLAB code for creating the publishers.},label={lst:matlabPubl}]
+pub1 = rospublisher('/five_dof_robotarm/base_to_turntable_controller/command','std_msgs/Float64');
+pub2 = rospublisher('/five_dof_robotarm/second_joint_controller/command','std_msgs/Float64');
+pub3 = rospublisher('/five_dof_robotarm/third_joint_controller/command','std_msgs/Float64');
+pub4 = rospublisher('/five_dof_robotarm/fourth_joint_controller/command','std_msgs/Float64');
+pub5 = rospublisher('/five_dof_robotarm/fifth_joint_controller/command','std_msgs/Float64');
+\end{lstlisting}
+%Pythoncode
+\begin{comment}
 \begin{lstlisting}[language=python,caption={Python code for creating the publishers.},label={lst:pythonPubl}]
 #Define publishers for each joint position controller commands.
 pub1 = rospy.Publisher('/five_dof_robotarm/first_joint_controller/command', Float64, queue_size=10)
@@ -22,9 +31,20 @@ pub3 = rospy.Publisher('/five_dof_robotarm/third_joint_controller/command', Floa
 pub4 = rospy.Publisher('/five_dof_robotarm/fourth_joint_controller/command', Float64, queue_size=10)
 pub5 = rospy.Publisher('/five_dof_robotarm/fifth_joint_controller/command', Float64, queue_size=10)
 \end{lstlisting}
+\end{comment}
 
-And how to publish the wanted torques is seen below in \lstref{lst:pythonPubs}. Here $u$ is the vector of the controller output. During the project it was also wanted to do the same in Matlab and the initial thought is the same and can be viewed in the appendix. 
 
+And how to publish the wanted torques is seen below in \lstref{lst:matlabPubs}. Here $u$ is the vector of the controller output. During the project it was also wanted to do the same in Matlab and the initial thought is the same and can be viewed in the appendix. 
+
+\begin{lstlisting}[language=Matlab,caption={MATLAB code for publish wanted joint torques},label={lst:matlabPubs}]
+    send(pub1,u(1))
+    send(pub2,u(2))
+    send(pub3,u(3))
+    send(pub4,u(4))
+    send(pub5,u(5))
+\end{lstlisting}
+
+\begin{comment}
 \begin{lstlisting}[language=python,caption={Python code for publish wanted torques},label={lst:pythonPubs}]
 pub1.publish(u[0,0])
 pub2.publish(u[1,0])
@@ -32,8 +52,10 @@ pub3.publish(u[2,0])
 pub4.publish(u[3,0])
 pub5.publish(u[4,0])
 \end{lstlisting}
+\end{comment}
 
-Another important functionallity to do control is to get the feedback from Gazebo with joint position and joint velocities. To do this a subscriber is needed. The subscriber can thought of as the opposite as the publisher. Instead of publishing values to a service, we now want to listen to a service. 
+
+Another important functionallity to do control is to get the feedback from Gazebo with joint position and joint velocities. To do this a subscriber is needed. The subscriber can thought of as the opposite as the publisher. Instead of publishing values to a service, we instead want to listen to a service. 
 
 
 \section{Control}
@@ -168,8 +190,47 @@ Now that we know that the gravity compensation is working we can start to test t
     \label{fig:LS}
 \end{figure*}
 
-In \figref{fig:LS} different data is plotted from a random configuration to a some kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking some overshoot is therefore accepted for this case. By looking at the plots, the results looks good. One thing that could be better is the joint velocity of last joint which seems a bit unstable. Additional tuning to try to avoid the ugly input and joint velocity of the fifth joint results in slow convergence of the joint angle. Since the moments of inertia is very low and Gazebo handles low inertia very bad, so this effect is assumed to be because of this and the when implementing this on the real robot it is expected that this effect will not be a problem. From \figref{fig:LSq} one can see $q_5$ converges rather smooth and the gains will be used for further testing. It may be worth to mention that when doing set point tracking the steps are not that large and the gains can be altered for better performance.  
+In \figref{fig:LS} different data is plotted from a random configuration to a some kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking some overshoot is therefore accepted for this case. By looking at the plots, the results looks good. One thing that could be better is the joint velocity of last joint which seems a bit unstable. Additional tuning to try to avoid the ugly input and joint velocity of the fifth joint results in slow convergence of the joint angle. Since the moments of inertia is very low and Gazebo handles low inertia very bad, so this effect is assumed to be because of this and the when implementing this on the real robot it is expected that this effect will not be a problem. From \figref{fig:LSq} one can see $q_5$ converges rather smooth and the gains will be used for further testing. It may be worth to mention that when doing set point tracking the steps are not that large and the gains can be altered for better performance.  \\
 
+The main objective is to follow a path so it is desirable to test the controller for a path as well. The \figref{fig:pathTS} shows how each joint manages to follow the desired path. It is easy to see that we have a delay from the input to the output. This path is only time dependent so it changes without respect to if the robot arm has managed to get the desired position or not. This problem can be solves using a feed forward controller, but this project does not cover this.
+
+\def\picsSiz{1.08}
+\begin{figure*}[htbp]
+    \centering
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF1.eps}
+        \caption{ }
+        \label{}
+    \end{subfigure}
+    ~ 
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF2.eps}
+        \caption{ }
+    \end{subfigure}
+    ~
+    \centering
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF3.eps}
+        \caption{ }
+    \end{subfigure}
+    ~ 
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF4.eps}
+        \caption{ }
+    \end{subfigure}
+    ~
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF5.eps}
+        \caption{ }
+    \end{subfigure}
+    \caption{Path following}
+    \label{fig:pathTS}
+\end{figure*}
 
 
 

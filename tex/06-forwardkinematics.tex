@@ -329,7 +329,7 @@ There are different methods of solving the inverse kinematics problem. One way t
 
 It is also possible to use a geometric approach where the thought is to find the joint angels by projecting the manipulator onto the previous plane[\cite{spong}] and solve it using trigonometry. Both \cite{spong} and \cite{Siciliano} uses simple manipulators and special cases where simplifications can be made. \\
 
-After some research in making a inverse kinematics solver from the bottom and up with constraints and everything, it was found that this will not yield satisfactory results. The choice was therefore to use an already existing solver. Many solvers did not support a 5 DOF robot manipulator, but after some research the choice fell upon a MATLAB robotics toolbox(https://se.mathworks.com/help/robotics/). The toolbox makes a great interface with ROS which makes it easy to create subscribers and listeners here as well. A useful part is that it is possible to include the URDF file where MATLAB creates a robot object and represent the robot manipulator as something called rigid body tree. In other words it is just the way MATLAB parses the URDF file. In \figref{fig:showRovs} the MATLAB function $show(robot)$ is used and you can see the visualization of the robot. This can be used to check solutions and it can be though as a simpler version of RViz. The right finger is shifted to the center to use it as a inverse kinematics reference point. 
+After some research in making a inverse kinematics solver from the bottom and up with constraints and everything, it was found that this will not yield satisfactory results. The choice was therefore to use an already existing solver. Many solvers did not support a 5 DOF robot manipulator, but after some research the choice fell upon a MATLAB robotics toolbox(https://se.mathworks.com/help/robotics/). The toolbox makes a great interface with ROS which makes it easy to create subscribers and listeners here as well. A useful part is that it is possible to include the URDF file where MATLAB creates a robot object and represent the robot manipulator as something called rigid body tree. In other words it is just the way MATLAB parses the URDF file. In \figref{fig:showRovs} the MATLAB function $show(robot)$ is used and you can see the visualization of the robot. This can be used to check solutions and it can be though as a simpler version of RViz.  
 
 \begin{figure}[htbp]
   \centering
@@ -368,11 +368,46 @@ initialguess = robot.homeConfiguration;
 qd = [configSoln(:).JointPosition]';
 \end{lstlisting}
 
+In \figref{fig:oath} a random path has been generated. It is inside the configuration space of the robot. The projection is also plotted to get a better feel of the 3D path. It was wanted to generate a circular motion such that it would start and end in the same point. Below in \lstref{lst:path} the process of generate this simple path is shown. The desired orientation in ZYX Euler angles is $o_d = [0,0,0]^T$ which in means that the desired orientation is up.
+\begin{lstlisting}[caption={MATLAB code for creating path},label={lst:path},language=Matlab]
+t = 0:steplength:2*pi+steplength
+xpath = 0.035*cos(t)+0.09;
+ypath = 0.035*sin(t)+0.09;
+zpath = 0.050*sin(t)+0.25;
+path = [xpath;ypath;zpath];
+\end{lstlisting}
+In \figref{fig:compa} the generated path from \lstref{lst:path} and the calculated path from the inverse kinematics is plotted. Equation \eqref{eq:T5} was used to convert the joint paths to xyz coordinates in the world frame. The results is very good and the largest error is an error of $0.0092$ radians which corresponds to approximately $0.5$ degrees. The mean is $8.54\cdot10^{-6}$ radians. 
+
+\def\picsSiz{1.08}
+\begin{figure*}[htbp]
+    \centering
+    \begin{subfigure}[htbp]{0.48\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathRob.eps}
+        \caption{An arbitrary generated path for the end effector}
+        \label{fig:oath}
+    \end{subfigure}
+    ~ 
+    \begin{subfigure}[htbp]{0.48\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/compIK.eps}
+        \caption{Comparison by the ran}
+        \label{fig:compa}
+    \end{subfigure}
+    \caption{Testing the inverse kinematic solver}
+    \label{fig:IKcom}
+\end{figure*}
+
+In \figref{fig:outOC} some of the path is moved outside the configuration space of the robot and one can see that the solver makes the path at its best effort. It other words if given a path it will follow it until it goes out of the configuration space and then it will follow the path that mimimzes the cost function of the solver. 
 
 
 
-
-
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.9\textwidth]{img/outOS.eps}
+  \caption{Test of the solver when the path is partially out of the configuration space}
+  \label{fig:outOC}
+\end{figure}
 
 
 
