@@ -128,9 +128,8 @@ In \eqref{eq:potE} the potential energy is calculated for each link in the robot
  \end{align*}
 This is the gravity components that each joint will \textit{feel} from the other links and by adding this to a PD controller it will compensate for this disturbance. 
 
-\subsubsection{Test of controller}
-Now that a controller is in place it is time to test it. The first thing to test is the gravity compensation. The best way to view the results is to watch the robot it is in a stationary state the only input that are sent into the individual joint torque controllers should be the data computed only by the gravity compensation part. Some random desired joint angles is chosen and the following results can be viewed in \tabref{table:gravity}.\\
-
+\section{Test of controller}
+Now that a controller is in place it is time to test it. The first thing to test is the gravity compensation. One way to view the results is to watch the robot it is in a stationary state. The only input that are sent into the individual joint torque controllers should be the data computed only by the gravity compensation part. Some random desired joint angles is chosen and the following results can be viewed in \tabref{table:gravity}.\\\\
 \begin{table}[htbp]
 \centering
 \caption{Test results of the precision of the gravity compensation}
@@ -147,11 +146,8 @@ Now that a controller is in place it is time to test it. The first thing to test
         \bottomrule
     \end{tabular}
 \end{table}
-
- One can see that the results are good. One can see that the PD part of the controller must some work which means that the end effector will not be completely at its desired position. The biggest error is in the second joint and for this configuration $0.0022 rad = 0.1261 deg$ which corresponds to an error of $0.0003$ in the xyz world frame. \\
- 
-Now that we know that the gravity compensation is working we can start to test the controller. The gain matrices $K_p$ and $K_d$ are implemented as positive definite diagonal matrices.
-
+One can see that the results are good. There is some error which means that the end effector will not be completely at its desired position. The biggest error is in the second joint and for this configuration $0.0022 rad = 0.1261 deg$\\\\
+Now that we know that the gravity compensation is working we can start to test the controller. The gain matrices $K_p$ and $K_d$ are implemented as positive definite diagonal matrices.\\\\
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
     \centering
@@ -189,11 +185,18 @@ Now that we know that the gravity compensation is working we can start to test t
     \caption{Different plots of recorded data when a large step in desired joint angles is introduced}
     \label{fig:LS}
 \end{figure*}
+In \figref{fig:LS} data is plotted from a random configuration to a kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking some overshoot is therefore accepted for this case.  One thing that could be better is the joint velocity of last joint which seems a bit unstable. Additional tuning to try to avoid the bad input and joint velocity of the fifth joint results in slow convergence of the joint angle. Since the moments of inertia is very low and Gazebo handles low inertia very bad, this effect is assumed to be because of this and the when implementing this on the real robot it is expected that this effect will not be a problem. From \figref{fig:LSq} one can see $q_5$ converges rather smooth and the gains will be used for further testing. It may be worth to mention that when doing set point tracking the steps are not be this large and the gains can be altered for better performance.  \\\\
 
-In \figref{fig:LS} different data is plotted from a random configuration to a some kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking some overshoot is therefore accepted for this case. By looking at the plots, the results looks good. One thing that could be better is the joint velocity of last joint which seems a bit unstable. Additional tuning to try to avoid the ugly input and joint velocity of the fifth joint results in slow convergence of the joint angle. Since the moments of inertia is very low and Gazebo handles low inertia very bad, so this effect is assumed to be because of this and the when implementing this on the real robot it is expected that this effect will not be a problem. From \figref{fig:LSq} one can see $q_5$ converges rather smooth and the gains will be used for further testing. It may be worth to mention that when doing set point tracking the steps are not that large and the gains can be altered for better performance.  \\
 
-The main objective is to follow a path so it is desirable to test the controller for a path as well. The \figref{fig:pathTS} shows how each joint manages to follow the desired path. It is easy to see that we have a delay from the input to the output. This path is only time dependent so it changes without respect to if the robot arm has managed to get the desired position or not. This problem can be solves using a feed forward controller, but this project does not cover this.
 
+
+
+
+\section{Motion planning}
+
+
+
+The main objective is to follow a path so it is desirable to test the controller for a path as well. The \figref{fig:pathTS} shows how each joint manages to follow the desired path. It is easy to see that we have a delay from the input to the output. This path is only time dependent so it changes without respect to if the robot arm has managed to get the desired position or not.\\
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
     \centering
@@ -201,7 +204,6 @@ The main objective is to follow a path so it is desirable to test the controller
         \centering
         \includegraphics[width = \picsSiz\linewidth]{img/pathF1.eps}
         \caption{ }
-        \label{}
     \end{subfigure}
     ~ 
     \begin{subfigure}[htbp]{0.45\textwidth}
@@ -231,7 +233,49 @@ The main objective is to follow a path so it is desirable to test the controller
     \caption{Path following}
     \label{fig:pathTS}
 \end{figure*}
+Since the results in \figref{fig:pathTS} is not so satisfactory a simple kind of feedforward was implemented. Since the path is calculated offline the informatioin about the next set points is used. The difference between desired state and current state has been $\tilde{q} = q_{d_i}-q$, but the new $\tilde{q}$ is now rewritten into 
+\begin{align*}
+    \tilde{q} = q_{d_ii}-q + \frac{q_{d_{i+1}}-q }{2}+\frac{q_{d_{i+2}}-q }{2}
+\end{align*}
+The results are given in \figref{fig:pathTSff}. It easy to see that the results is much better. It must be taken into consideration that $q_{d_i}$ is dependent on time and by introducing the two next set points the time shift becomes less apparent. If the next desired position is based on error(i.e. go to next point when you are close enough) instead of time based, the approach may be different. These results are of course given by a random path with only set points given and not desired joint velocity. A real motion planning algorithm should be used. This is just for showing the results. this means that a trajectory planner algorithm should be made. 
 
 
+
+\def\picsSiz{1.08}
+\begin{figure*}[htbp]
+    \centering
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF1ff.eps}
+        \caption{ }
+    \end{subfigure}
+    ~ 
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF2ff.eps}
+        \caption{ }
+    \end{subfigure}
+    ~
+    \centering
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF3ff.eps}
+        \caption{ }
+    \end{subfigure}
+    ~ 
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF4ff.eps}
+        \caption{ }
+    \end{subfigure}
+    ~
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/pathF5ff.eps}
+        \caption{ }
+    \end{subfigure}
+    \caption{Path following with with more set points}
+    \label{fig:pathTSff}
+\end{figure*}
 
 

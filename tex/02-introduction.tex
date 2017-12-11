@@ -1,10 +1,20 @@
 \chapter{Introduction}
-\section{Motivation}
-To properly control and model a robot arm a lot of mathematics is involved and one need to do a bit of testing to see if the mathematical model is right. But most of all it is very usefull to have a simulation environment when one are testing different controllers and testing out different controller gains. If one are to test on the real system it is very possible that the robot arm or other equipment can get destroyed. If a simulation environment is created this risk disappears and one can do proper testing quicker and more efficient without having to think about all these risks. \\ \\
-It was also wanted to include a camera at the tip of the robotarm and to do steer the robot arm based on the outputs of this camera therefore a good controller and a simple motion planner is wanted as well. 
-(Feedback AL: This text needs to be improved considerably. For example, the  second paragraph is not well connetected at all with the first one.("It was also wanted..":Also woth respect to what?) Please look into other MSc. 
-\section{What has been done before/State of art}
-\subsection{Simulation}
-(I guess robots have been simulated before)
-\subsection{Control}
-(What are the most used controllers at the moment?)
+
+Control and motion planning for a robot manipulator can be a very difficult task and doing testing on a real robot manipulator can introduce time delays, noise, random behaviour etc. When doing testing of new controllers and motion planning algorithms these problems can make the time consumption increase and it can be a lot harder to find good controller gains. The biggest effect one may one want to avoid is the harm that can happen to a manipulator. Therefore, it can be very useful to make a virtual model of the manipulator and place it in an virtual environment where it is easy to do testing and the real manipulator does not get damaged. It is of course a common approach to test your manipulator in a virtual environment.\\\\
+This project will therefore focus on creating a virtual model of a given robotic manipulator and place it in a virtual environment. It is also wanted to calculate the forward kinematics of the robotic manipulator at hand along with solving the more complex inverse kinematics problem which is an important aspect when doing motion planning. A basic controller is also considered and together with this some simple motion planning algorithm is designed to follow simple path. \\\\
+    
+
+
+
+
+%To properly control and model a robot arm a lot of mathematics is involved and one need to do a bit of testing to see if the mathematical model is right. But most of all it is very usefull to have a simulation environment when one are testing different controllers and testing out different controller gains. If one are to test on the real system it is very possible that the robot arm or other equipment can get destroyed. If a simulation environment is created this risk disappears and one can do proper testing quicker and more efficient without having to think about all these risks. \\ \\
+%It was also wanted to include a camera at the tip of the robotarm and to do steer the robot arm based on the outputs of this camera therefore a good controller and a simple motion planner is wanted as well. 
+%(Feedback AL: This text needs to be improved considerably. For example, the  second paragraph is not well connetected at all with the first one.("It was also wanted..":Also woth respect to what?) Please look into other MSc. 
+
+%This text needs to be improved considerably. For example, the second paragraph is not well connected at all with the first one. ("It was also wanted..." : Also with respect to what?). Please look into other MSc theses to get ideas about the style of writing.
+
+%\section{What has been done before/State of art}
+%\subsection{Simulation}
+%(I guess robots have been simulated before)
+%\subsection{Control}
+%(What are the most used controllers at the moment?)
