@@ -89,19 +89,34 @@ The results are given in \figref{fig:pathTSff}. One can see that the error is al
     \caption{Path following with trajectory planner}
     \label{fig:pathTSff}
 \end{figure*}
-
+\newpage
 
 \section{Motion planning}
-Until now we have just used a predefined path that has been made to test the different aspects of the manipulator. If it is wanted to go to one point to another it can be solved by creating a spline between these two points and do path following\cite{Spline}\cite{MatlabSpline}\cite{MatlabSpline2}. The task in not so easy if there are obstacles present. We then need to find a set of points such that the obstacle is avoided. One algoritgm for solving this is the \textit{rapidly-exploring random tree (RRT)} which gives good results without any parameter tuning\cite{Lavalle}. 
+Until now we have just used a predefined path that has been made to test the different aspects of the manipulator. If it is wanted to go to one point to another it can be solved by creating a spline between these two points and do path following\cite{Spline}\cite{MatlabSpline2}\cite{MatlabSpline}. The task is not so easy if there are obstacles present. We then need to find the set-points such that the obstacle is avoided. One algorithm for solving this is the \textit{rapidly-exploring random tree (RRT)} which gives good results without any parameter tuning\cite{Lavalle}. 
+
 \subsection{Rapidly exploring Random Tree (RRT)}
-The RRT algorithm is creating a space-filling tree and in our case it can be used with obstacles in the search space such that the obstacle will be an illegal object where the three cannot expand and thus using shortest path algorithm to find a path trough the tree such that we get to the desired point and avoiding the obstacle. In \figref{fig:rrt2dex} an example is given of the algorithm. An obstacle ha been placed in the search space and the wanted point is behind the obstacle relative to the origin \cite{rrt}.
+The RRT algorithm is creating a space-filling tree and in our case it can be used with obstacles in the search space such that the obstacle will be an illegal object where the three cannot expand and using the shortest path to find a path trough the tree such that we get to the desired point and avoiding the obstacle. In \autoref{alg:rdt} one can see the \textit{simple rapidly exploring dense trees(RDT)} alogithm presented by \cite{Lavalle}. The difference between RRT and RDT is that the RDT is using a dense sequence $\alpha(i)$, and for RRT $\alpha$ is a random value. This algoritm is without obstacle avoidance. If obstacle avoidance is wanted one have to check that the new edge does not intersect the obstacle if it intersects one have to find another. 
+\begin{algorithm}[htbp]
+ %\KwData{this text}
+ %\KwResult{how to write algorithm with \LaTeX2e }
+ SIMPLE\_RDT($q_0$)\;
+ $\mathcal{G}.init(q_0)$
+ \For{$i=1$ to $k$}{
+  $\mathcal{G}.add\_vertex(\alpha(i))$\;
+  $q_n\longleftarrow NEAREST(S(\mathcal{G}),\alpha(i))$\;
+  $\mathcal{G}.add\_edge(q_n,\alpha(i))$\;
+ }
+ \caption{}
+ \label{alg:rdt}
+\end{algorithm}
+\cite{rrt} provides code to find a path using RRT. In \figref{fig:rrt2dex} an example is given of the algorithm. An obstacle has been placed in the search space and the wanted point is behind the obstacle relative to the start point which in this case is the origin \cite{rrt}.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{img/rrt2dex.eps}
   \caption{2D example of the RRT algoritm}
   \label{fig:rrt2dex}
 \end{figure}
-The next step is to expand this to a 3D example and do the same there. The toolbox provided by \cite{rrt} does include 3D RRT but not with obstacle avoidance unfortunately. The source code is given though, which mean it can be augmented into covering 3D obstacle avoidance. In \figref{fig:rrt3dex} the result of RRT in 3D space is presented. The red line is the lines between the nodes in the tree which shows a path to the desired point. 
+The next step is to expand this to a 3D example and do the same there. The code provided by \cite{rrt} does include 3D RRT but not with obstacle avoidance unfortunately. The source code is given though, which mean it can be augmented into covering 3D obstacle avoidance. In \figref{fig:rrt3dex} the result of RRT in 3D space is presented. The red line is the lines between the nodes in the tree which shows a path to the desired point. 
 
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
@@ -125,4 +140,25 @@ The next step is to expand this to a 3D example and do the same there. The toolb
  As one can see in \figref{fig:rrt3dex} there are some green lines. These lines can be seen as shortcuts between each node the length of these shortcuts can be changed. In \figref{fig:rrtSpline} we have a path that is more complicated than it should be and one should maybe consider to increase the length of the shortcuts to get less nodes. These can help to choose less nodes if that is wanted.
  
  \subsubsection{Obstacle avoidance}
- There is no point in doing the RRT if one does not have an obstacle. When an obstacle is added to the search space one have to check if the line connecting the new node to its parent node does not intersect with the object. 
+ There is no point in doing the RRT if one does not have an obstacle. When an obstacle is added to the search space one have to check if the line connecting the new node to its parent node does not intersect with the object. The same has to be done with the shortcuts. In \figref{fig:obav} one can see the results when an obstacle is added into the workspace. The RRT algorithm finds as decent path and a spline is generated based on the results. 
+
+\def\picsSiz{1.08}
+\begin{figure*}[htbp]
+    \centering
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/rrt3dOBav.eps}
+        \caption{Result of the RRT algorithm with an obstacle}
+        \label{fig:obav1}
+    \end{subfigure}
+    ~ 
+    \begin{subfigure}[htbp]{0.45\textwidth}
+        \centering
+        \includegraphics[width = \picsSiz\linewidth]{img/rrt3dOBavPath.eps}
+        \caption{A spline is found based on the results}
+        \label{fig:obav2}
+    \end{subfigure}
+    \caption{3D example of the RRT algoritm with obstacle present}
+    \label{fig:obav}
+\end{figure*}
+
