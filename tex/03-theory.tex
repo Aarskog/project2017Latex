@@ -1,6 +1,6 @@
 \chapter{Control and Path planning}
-Now that a functioning simulation environment is created and the inverse kinematics problem is solved, it is time to connect these to and create a controller to steer the robot manipulator. The initial thought is a multivariable control on top on single joint control. The multivariable control is done in Matlab, but it can be done in Python as well, but since the inverse kinematics problem is solved in MATLAB it is easiest to do the control in MATLAB. The multivariable control will use the joint positions and joint velocities to compute the desired joint torques which is sent to joint PID controllers which is handled by using ROS control package. The first thing to do is therefore to create the individual joint PID controllers. 
-To create these controllers two new files are needed. A new launch file must be created. It is possible to just append the launch file, but to make everything more understandable and if the package is to be used on the real robot it is easier to make a new launch file that can be included in other launch files. The task of the control.launch file is to spawn a node which includes all of the five controllers. In \lstref{lst:launchControl} one can see the the code to spawn the controllers. It consists of two statements. The first is loading the parameters of the controllers from the YAML file. Then with the parameters loaded, a node is created and it makes the joint controller services that the wanted joint torques can be published to. 
+Now that a functioning simulation environment is created and the inverse kinematics problem is solved, it is time to connect these to and create a controller to steer the robot manipulator. The initial thought is a multivariable control on top on single joint control. The multivariable control is done in Matlab, but it can be done in Python as well, but since the inverse kinematics problem is solved in MATLAB it is easiest to do the control in MATLAB. Code for the controller in Pyhton is also provided. \\\\
+The multivariable control will use the joint positions and joint velocities to compute the desired joint torques which is sent to joint PID controllers and handled by using the ROS control package\cite{ROScontrol}. The first thing to do is therefore to create the individual joint PID controllers. To create these controllers two new files are needed. A new launch file must be created. It is possible to just append the launch file, but to make everything more understandable and if the package is to be used on the real robot it is easier to make a new launch file that can be included in other launch files. The task of the \textit{control.launch} file is to spawn a node which includes all of the five controllers. In \lstref{lst:launchControl} one can see the the code to spawn the controllers. It consists of two statements. The first is loading the parameters of the controllers from the YAML file. Then with the parameters loaded, a node is created and it makes the joint controller services that the wanted joint torques can be published to. The \textit{control.launch} file is launched from the initial launch file.
 \begin{lstlisting}[language=xml,caption={Spawns the controller node},label={lst:launchControl}]
 <rosparam file="(find five_dof_robotarm)/config/joints.yaml" command="load"/>
 
@@ -12,7 +12,7 @@ To create these controllers two new files are needed. A new launch file must be 
     fourth_joint_controller
     fifth_joint_controller"/>
 \end{lstlisting}
-Below in \lstref{lst:matlabPubl} one can see how the publishers that will publish the desired joint torques calculated by the controller. 
+Below in \lstref{lst:matlabPubl} one can see how the publishers are created which will publish the desired joint torques calculated by the multivariable controller to the joint controllers.
 \begin{lstlisting}[language=Matlab,caption={MATLAB code for creating the publishers.},label={lst:matlabPubl}]
 pub1 = rospublisher('/five_dof_robotarm/base_to_turntable_controller/command','std_msgs/Float64');
 pub2 = rospublisher('/five_dof_robotarm/second_joint_controller/command','std_msgs/Float64');
@@ -31,11 +31,7 @@ pub4 = rospy.Publisher('/five_dof_robotarm/fourth_joint_controller/command', Flo
 pub5 = rospy.Publisher('/five_dof_robotarm/fifth_joint_controller/command', Float64, queue_size=10)
 \end{lstlisting}
 \end{comment}
-
-
-
-And how to publish the wanted torques is seen below in \lstref{lst:matlabPubs}. Here $u$ is the vector of the controller output. During the project it was also wanted to do the same in Matlab and the initial thought is the same and can be viewed in the appendix. 
-
+How to publish the wanted torques is seen below in \lstref{lst:matlabPubs}. Here $u$ is the vector of the controller output. 
 \begin{lstlisting}[language=Matlab,caption={MATLAB code for publish wanted joint torques},label={lst:matlabPubs}]
     send(pub1,u(1))
     send(pub2,u(2))
@@ -43,9 +39,6 @@ And how to publish the wanted torques is seen below in \lstref{lst:matlabPubs}. 
     send(pub4,u(4))
     send(pub5,u(5))
 \end{lstlisting}
-
-
-
 \begin{comment}
 \begin{lstlisting}[language=python,caption={Python code for publish wanted torques},label={lst:pythonPubs}]
 pub1.publish(u[0,0])
@@ -55,16 +48,14 @@ pub4.publish(u[3,0])
 pub5.publish(u[4,0])
 \end{lstlisting}
 \end{comment}
-
-
-Another important functionality to do control is to get the feedback from Gazebo with joint position and joint velocities. To do this a subscriber is needed. The subscriber can thought of as the opposite as the publisher. Instead of publishing values to a service, we instead want to listen to a service. 
+Another important functionality to do control is to get the feedback from Gazebo with joint position and joint velocities. To do this, a subscriber is needed. The subscriber can be thought of as the opposite as the publisher. Instead of publishing values to a service, we instead want to listen to a service. 
 
 
 \section{Control}
 
 \subsection{PD controller with gravity compensation}
 
-The controller that is going to be used is a simple PD controller with gravity compensation derived by \cite{spong}:
+The controller that is going to be used is a simple PD controller with gravity compensation derived by \cite{Siciliano,spong}:
 $$
     u=K_p\tilde{q} - K_d\dot{q} +g(q)
 $$
@@ -72,19 +63,17 @@ $$
  \begin{align}\label{eq:gravity}
  g(q) = \frac{\partial P}{\partial q_k}
  \end{align}
- where the total potential energy for a n-link robot is $P = \sum^n_{i=1}P_i$. Where $P_i$ is the potential energy for each individual link. For this specific manipulator the center of mass is assumed in the geometric center of each link. In \cite{Siciliano} this controller is proven by using Lyapunov direct method to be globally asymptotically stable(GAS) as long as $K_d$ and $K_p$ is positive definite. It is important to keep in mind that if the online computing of $g(q)$ is not perfect, the statement of GAS does not hold. Based on the assumptions made, the controller can not guarantee GAS. 
+ where the total potential energy for a n-link robot is $P = \sum^n_{i=1}P_i$. Where $P_i$ is the potential energy for each individual link. For this specific manipulator the center of mass is assumed in the geometric center of each link. In \cite{Siciliano} this controller is proven by using Lyapunov direct method to be globally asymptotically stable(GAS) as long as $K_d$ and $K_p$ is positive definite. It is important to keep in mind that if the online computing of $g(q)$ is not perfect, the statement of GAS does not hold. Therefore, based on the assumptions made about the mass and measurements in chapter \ref{chap:soft}, the controller can not guarantee GAS. 
  
  \subsection{Deriving the gravitational effect}
- The robot at hand starts and ends with twisting joints and only the three joints in the middle is rotational joints. This means that the potential energy is only dependent on $q_2$,$q_3$ and $q_4$ which makes calculating the potential energy a bit a easier. Because of this, the potential energy can be calculated by using a 2D sketch as shown in \figref{draw:pot-rob}.
-
+ The robot at hand starts and ends with twisting joints and only the three joints in the middle is rotational joints. This means that the potential energy is only dependent on $q_2$,$q_3$ and $q_4$ which makes calculating the potential energy a bit easier. Because of this, the potential energy can be calculated by using a 2D sketch as shown in \figref{draw:pot-rob}.\\\\
 \begin{figure}[htbp]
     \centering
     \input{tex/drawing/robotarm.tex}
-    \caption{Sketch of the robot the three middle joints of the robot}
+    \caption{Sketch of the three middle joints of the robot}
     \label{draw:pot-rob}
 \end{figure}
-     
-In \eqref{eq:potE} the potential energy is calculated for each link in the robot. 
+In equation \eqref{eq:potE} the potential energy is calculated for each link in the robot. 
  \begin{align}
     \begin{split}\label{eq:potE}
         P_1 &= m_1g\frac{L_1}{2}
@@ -100,11 +89,8 @@ In \eqref{eq:potE} the potential energy is calculated for each link in the robot
         P &= P_1 + P_2 + P_3 + P_4 + P_5
     \end{split}   
  \end{align}    
-
-
- Where $L_4$ is the part up to the rotational joint. $L_5$ and $m_5$ is the rotational joint and the gripper together.  \\
- 
- And then, to calculate individual gravity components equation \eqref{eq:gravity} is used on \eqref{eq:potE}:
+$L_4$ is the part up to the rotational joint. $L_5$ and $m_5$ is the rotational joint and the gripper together.\\\\
+To calculate individual gravity components equation \eqref{eq:gravity} is used with equation \eqref{eq:potE}:
 
  \begin{align*}
     g_1 &= 0
@@ -131,7 +117,7 @@ In \eqref{eq:potE} the potential energy is calculated for each link in the robot
 This is the gravity components that each joint will \textit{feel} from the other links and by adding this to a PD controller it will compensate for this disturbance. 
 
 \section{Test of controller}
-Now that a controller is in place it is time to test it. The first thing to test is the gravity compensation. One way to view the results is to watch the robot it is in a stationary state. The only input that are sent into the individual joint torque controllers should be the data computed only by the gravity compensation part. Some random desired joint angles is chosen and the following results can be viewed in \tabref{table:gravity}.\\\\
+Now that a controller is in place it is time to test it. The first thing to test is the gravity compensation. One way to view the results is to watch the robot when it is in a stationary state. The only input that are sent into the individual joint torque controllers should only be the data computed by the gravity compensation part. Some random desired joint angles is chosen and the following results can be viewed in \tabref{table:gravity}. The simulation is done in Gazebo.\\\\
 \begin{table}[htbp]
 \centering
 \caption{Test results of the precision of the gravity compensation}
@@ -148,7 +134,7 @@ Now that a controller is in place it is time to test it. The first thing to test
         \bottomrule
     \end{tabular}
 \end{table}
-One can see that the results are good. There is some error which means that the end effector will not be completely at its desired position. The biggest error is in the second joint and for this configuration $0.0022 rad = 0.1261 deg$\\\\
+The results are satisfactory. There is some error which means that the end effector will not be completely at its desired position. The biggest error is in the second joint which makes sense since the error propagates from the end effector and down to the first joint which will have the accumulated error from all the calculated gravity components.\\\\
 Now that we know that the gravity compensation is working we can start to test the controller. The gain matrices $K_p$ and $K_d$ are implemented as positive definite diagonal matrices.\\\\
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
@@ -171,6 +157,7 @@ Now that we know that the gravity compensation is working we can start to test t
         \centering
         \includegraphics[width = \picsSiz\linewidth]{img/LSqdot.eps}
         \caption{ }
+        \label{fig:LSqdot}
     \end{subfigure}
     ~ 
     \begin{subfigure}[htbp]{0.45\textwidth}
@@ -187,4 +174,7 @@ Now that we know that the gravity compensation is working we can start to test t
     \caption{Different plots of recorded data when a large step in desired joint angles is introduced}
     \label{fig:LS}
 \end{figure*}
-In \figref{fig:LS} data is plotted from a random configuration to a kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking some overshoot is therefore accepted for this case.  One thing that could be better is the joint velocity of last joint which seems a bit unstable. Additional tuning to try to avoid the bad input and joint velocity of the fifth joint results in slow convergence of the joint angle. Since the moments of inertia is very low and Gazebo handles low inertia very bad, this effect is assumed to be because of this and the when implementing this on the real robot it is expected that this effect will not be a problem. From \figref{fig:LSq} one can see $q_5$ converges rather smooth and the gains will be used for further testing. It may be worth to mention that when doing set point tracking the steps are not be this large and the gains can be altered for better performance.  \\\\
+In \figref{fig:LS} data is plotted from a random configuration to a kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking this case is unrealistic, but it may give a better indication of the robustness of the manipulator. In \figref{fig:LSqdot} the joint velocity $\dot{q}_5$ is not as smooth as the other velocities. This can be for a number of reasons. When doing the simlulations it was discovered that Gazebo did not handle small inertias very good and it is not known how Gazebo caluclated the joint velocites and this combined with the small inertia may be uneven results. By looking at the other plots as well it does not looks like the velocity is what Gazebo tells us it is.  
+
+
+%. From \figref{fig:LSq} one can see $q_5$ converges rather smooth and the gains will be used for further testing. It may be worth to mention that when doing set point tracking the steps are not be this large and the gains can be altered for better performance.  \\\\

@@ -1,18 +1,18 @@
-\chapter{Kinematics}
-As we already know the robot can be represented as a kinematic chain of links and connected by revolute joints. In this chapter the forward kinematics for this robotic manipulator is calculated and a method for solving the inverse kinematics is proposed. 
+\chapter{Kinematics}\label{chap:kinematics}
+From the previous chapter we know the robot can be represented as a kinematic chain of rigid bodies and connected by revolute joints\cite{Siciliano}. The kinematics of the manipulator is described without consideration of the forces and torques causing its motion. This means that the description is geometric\cite{spong}. In this chapter the forward kinematics for this robotic manipulator is calculated and a method for solving the inverse kinematics is proposed. 
 
 \section{Forward Kinematics}
-The forward kinematics states the relationship between the end effector and the individual joints. Or as \cite{Siciliano} says it: The motion of the structure is obtained by composition of the elementary motions of each link with respect to the previous one. An easy way to get the forward kinematics is to use the Denavit-Hartenberg(DH) convention. \cite{spong} states that each homogeneous transformation $A_i$ is represented as a product of four basic transformations: 
-
-$$
+The forward kinematics states the relationship between the end effector and the individual joints. The motion of the manipulator is obtained by composition of the elementary motions of each link with respect to the previous one\cite{Siciliano}. An easy way to get the forward kinematics is to use the Denavit-Hartenberg(DH) convention. Each homogeneous transformation $A_i$ is represented as a product of four basic transformations\cite{spong}: 
+\begin{align}\label{eq:Ai}
 A_i = \text{Rot}_{z,\theta_i}\text{Trans}_{z,d_i}\text{Trans}_{x,a_i}\text{Rot}_{x,\alpha_i}=
     \begin{bmatrix}
         c_{\theta_i} & -s_{\theta_i}c_{\alpha_i} & s_{\theta_i}s_{\alpha_i} & a_ic_{\theta_i}\\
         s_{\theta_i} & c_{\theta_i}c_{\alpha_i} & -c_{\theta_i}s_{\alpha_i} & a_is_{\theta_i}\\
         0 & s_{\alpha_i} & c_{\alpha_i} &d_i\\
         0 & 0 & 0 & 1
-    \end{bmatrix}
-$$
+    \end{bmatrix}    
+\end{align}
+
 
 where $c_{\theta_i} = \cos{(\theta_i)}$ and $s_{\theta_i} = \sin{(\theta_i)}$, and the same for $\alpha$. $A_i$ is a transformation matrix which states the transformation between link number $i$ and link number $i-1$. This means that it is possilbe to get the transformation from the robot base to the end effector by multiplying each transformation matrix:
 \begin{align*}
@@ -26,22 +26,19 @@ where $c_{\theta_i} = \cos{(\theta_i)}$ and $s_{\theta_i} = \sin{(\theta_i)}$, a
           0&1
       \end{bmatrix}, \quad i<j
  \end{align*}
- where $R^i_j = R^i_{i+1}R...R^{j-1}_j$ which is the orientation of $o_jx_jy_jz_j$ relative to $o_ix_iy_iz_i$. $o^i_j$ is the coordinate vector which can be written as $o^i_j = o^i_{j-1}+R^{i}_{j-1}o^{j-1}_j$. This is useful when finding the Jacobian of the robot and to verify that the end effector is at the wanted position and has the wanted orientation in the Cartesian world frame. When finding the DH-parameters they have to satisfy the two following properties (\cite{spong}).
+ where $R^i_j = R^i_{i+1}R...R^{j-1}_j$ which is the orientation of $o_jx_jy_jz_j$ relative to $o_ix_iy_iz_i$. $o^i_j$ is the coordinate vector which can be written as $o^i_j = o^i_{j-1}+R^{i}_{j-1}o^{j-1}_j$. This is useful when finding the Jacobian of the robot and to verify that the end effector is at the wanted position and has the wanted orientation in the Cartesian world frame. When finding the DH-parameters they have to satisfy the two following properties \cite{spong}
  \begin{itemize}
      \item The axis $x_n$ is perpendicular to the axis $z_{n-1}$
      \item The axis $x_n$ intersects the axis $z_{n-1}$
  \end{itemize}
-
-In \figref{fig:dhf} the different axis are set with respect to the DH properties stated above. 
-
+In \figref{fig:dhf} the different axis are set with respect to the DH properties stated above\cite{Kinematics}. 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{img/DHconv.png}
-  \caption{Kinematic scheme of the manipulator. Source \cite{Kinematics}}
+  \caption{Kinematic scheme of the manipulator}
   \label{fig:dhf}
 \end{figure}
-
-By looking at \figref{fig:dhf} the following DH parameters are found:
+\figref{fig:dhf}is used and the following DH parameters are found:
 \begin{center}
     \begin{tabular}{|c|c|c|c|c|}
          \hline
@@ -60,8 +57,8 @@ By looking at \figref{fig:dhf} the following DH parameters are found:
 % a_3 = 0.0506 + 0.0206 = 0.0712
 % d_5 = 0.0506 + 0.0206 + 0.0253 + 0.08 = 0.1765
 
-where $d_1 = 0.0506$, $a_2 = 0.1347$, $a_3 = 0.0712$ and $d_5 = 0.1765$ for the model. The real values need to be measured properly since the data sheet of the robot is insufficient and this is just guesstimated values. 
-Now it is possible to calculate $A_i$ for each link: 
+where $d_1 = 0.0506m$, $a_2 = 0.1347m$, $a_3 = 0.0712m$ and $d_5 = 0.1765m$ for the model. The real values need to be measured properly since the data sheet of the robot is insufficient and this is just guesstimated values\cite{Crustcrawler}. 
+Now it is possible to calculate $A_i$ from \eqref{eq:Ai} for each link: 
 \begin{align*}
 A_1 &= \begin{bmatrix} 
             c_1 & 0 & -s_1 & 0\\
@@ -136,7 +133,7 @@ A_5 = \begin{bmatrix}
         \end{split}
      \end{align}
 \end{subequations}
-where $s_{ijk} = \sin{(q_i + q_j + q_k)}$ and the same for $c_{ijk}$. 
+where $s_{ijk} = \sin{(q_i + q_j + q_k)}$ and the same for $c_{ijk}$. Notice that the zero configuration, i.e. all joint angles are zero, is not the configuration as pictured in \figref{fig:RG} where the manipulator is standing straight up which is the zero position when spawning the model with URDF. This can either be fixed in the URDF by changing the zero configuration or by subtracting the difference from $q_i$.
 %The $T_i^0$ matrix can be sectioned into
 %\begin{align*}
  %T_i^0 = 
@@ -166,11 +163,17 @@ where $s_{ijk} = \sin{(q_i + q_j + q_k)}$ and the same for $c_{ijk}$.
 \end{comment}
 %-----------------------------------------------------------------------------------------
 
-\subsection{Direct kinematics}
-(Just a smaller representation of the forward kinematics)
+%\subsection{Reduced form }
+%In \eqref{eq:T5} the orientation and position is described with a position vector and a rotation matrix. The rotation matrix can some times be a bit abstract and it can be hard to see what the orientation actually is. Along with simplifying some calculation and coding it can therefore be useful to represent the orientation as Euler Angles \cite{Siciliano}. The Euler angles that we choose is the \textit{Roll-Pitch-Yaw angles(RPY)} or ZYX angles. This means that we can decompose the orientation of the end-effector into three rotations, $\phi = [\varphi,\vartheta,\psi]^T$ where
+%\begin{align*}
+%    \varphi &= \atantwo{(r_{21},r_)}
+%\end{align*}
+
+
+
 
 \subsection{Jacobian}
-As we already know the forward kinematics can be written as:
+The geometric Jacobian gives the relationship between the joint velocities and the linear and angular velocities of the end effector\cite{Siciliano}\cite{spong}. As we already know the forward kinematics can be written as:
 \begin{align*}
     T(q) = 
     \begin{bmatrix}
@@ -179,16 +182,13 @@ As we already know the forward kinematics can be written as:
     \end{bmatrix}
 \end{align*}
 we want to express the linear velocity $\dot{p}$ and angular velocity $\omega$ as a function of the joint velocities $\dot{q}$. In \cite{Siciliano} the relations is stated as:
-
 \begin{equation}
     \begin{aligned}\label{eq:velo}
         \dot{p} &= J_P(q)\dot{q}\\
         \omega&= J_O(q)\dot{q}
     \end{aligned}
 \end{equation}
-
 where $J_O$ with dimensions (3 $\times$ n) is the relation between the joint velocities $\dot{q}$ and the end-effector linear velocity $\dot{p}$, and the (3 $\times$ n) matrix $J_O$ is the relation between the joint velocities $\dot{q}$ and the end-effector angular velocity $\omega$. \eqref{eq:velo} can be written as
-
 \begin{align*}
     v_e = 
     \begin{bmatrix}
@@ -203,8 +203,7 @@ where
         J_P \\ J_O
     \end{bmatrix}
 \end{align*}
-
-which is the matrix that \cite{Siciliano} calls the geometric Jacobian. The elements of 
+which is the geometric Jacobian. The elements of 
 $$
 J = 
 \begin{bmatrix}
@@ -224,9 +223,7 @@ can be calculated in the following way:
         \begin{bmatrix} z_{i-1} \times (p_e-p_{i-1}) \\ z_{i-1} \end{bmatrix} & \text{for a revolute joint}
     \end{cases}
 \end{align*}
-
 Since our manipulator only has revolute joints, the geometric Jacobian becomes
-
 \begin{align*}
     J(q) = 
     \begin{bmatrix}
@@ -243,9 +240,6 @@ Since our manipulator only has revolute joints, the geometric Jacobian becomes
     \end{bmatrix}
 \end{align*}
 From when the forward kinematics were calculated each position vector $p_i$ can be directly obtained from the equations \eqref{eq:T1} - \eqref{eq:T5}:
-
-
-
 \begin{align*}
     p_0 = \begin{bmatrix} 0 \\ 0 \\ 0 \end{bmatrix}    \quad
     p_1 = \begin{bmatrix} 0 \\ 0 \\ d_1\end{bmatrix}    \quad
@@ -254,7 +248,6 @@ From when the forward kinematics were calculated each position vector $p_i$ can 
     p_4 = \begin{bmatrix} c_1(a_3c_{23} + a_2c_2) \\ s_1(a_3c_{23} + a_2c_2) \\ d_1 - a_3s_{23}-a_2s_2\end{bmatrix}  \quad  
     p_5 = \begin{bmatrix} c_1(a_3c_{23} + a_2c_2 + d_5s_{234}) \\ s_1(a_3c_{23} + a_2c_2 + d_5s_{234}) \\ d_1 - a_3s_{23} - a_2s_2 + d_5c_{234} \end{bmatrix}    
 \end{align*}
-
 The next step is to find $z_{i-1}$. \cite{Siciliano} states that $z_{i-1}$ is given by the third column of the rotation matrix $R_{i-1}^0$. $R_{i-1}^0$ is already given in $T_i^0$, By looking at \eqref{eq:T1} - \eqref{eq:T5} the following values of $z_{i-1}$ is given:
 \begin{align*}
     z_0 &= \begin{bmatrix}0\\0\\1\end{bmatrix},
@@ -263,10 +256,7 @@ The next step is to find $z_{i-1}$. \cite{Siciliano} states that $z_{i-1}$ is gi
     z_3 = \begin{bmatrix}-s_1\\c_1\\0\end{bmatrix},
     z_4 = \begin{bmatrix}c_1s_{234}\\s_1s_{234}\\c_{234}\end{bmatrix}
 \end{align*}
-
 now we got everything needed to compute the geometric Jacobian and the result is presented below.
-
-
 \begin{align*}
     J(q) &= \\
     &\begin{bmatrix}
@@ -317,29 +307,23 @@ which has the full rank of $5$.
 
 
 \section{Inverse Kinematics}
-
-As we already know, the forward kinematics establishes the relationship between the joint variables and the position and orientation of the end effector. The problem of inverse kinematics is to find the joint variables when the position and orientation of the end effector is given. This is wanted because the wanted position or trajectory is given in the Cartesian world frame. Unfortunately the inverse kinematics problem is not as easy and straight forward as the forward kinematics problem. \cite{Siciliano} lists up several reasons the inverse kinematics problem is so much more complex:
+The forward kinematics establishes the relationship between the joint variables and the position and orientation of the end effector. The problem of inverse kinematics is to find the joint variables when the position and orientation of the end effector is given. This is wanted because the desired position or trajectory is given in the Cartesian world frame. Unfortunately the inverse kinematics problem is not as easy and straight forward as the forward kinematics problem. \cite{Siciliano} lists up several reasons the inverse kinematics problem is more complex:
 \begin{itemize}
     \item The equations to solve are in general nonlinear, and thus it is not always possible to find a closed-form solution.
     \item Multiple solutions may exist.
     \item Infinite solutions may exist, e.g., in the case of a kinematically redundant manipulator.
     \item There might be no admissible solutions, in view of the manipulator kinematic structure.
 \end{itemize}
-There are different methods of solving the inverse kinematics problem. One way to solve it is to solve it algebraically. Ideally you want a function that has the orientation and position as input and then gives the respective joint angles. In our case where we have a 5 DOF robot arm the equations becomes too large and too difficult to solve, \cite{spong}. By looking at the equation $T_5^0=H$ where $T_5^0$ is given in \eqref{eq:T5} and $H$ is the desired transformation matrix of the end effector. It shows us that it gives a complex set of equations to solve. Another thing that must be consideres is that not all joints in our system can rotate 360 degrees either so if a solution is to be found it may not work because of the limitations of the robot manipulator. \\
-
-It is also possible to use a geometric approach where the thought is to find the joint angels by projecting the manipulator onto the previous plane[\cite{spong}] and solve it using trigonometry. Both \cite{spong} and \cite{Siciliano} uses simple manipulators and special cases where simplifications can be made. \\
-
-After some research in making a inverse kinematics solver from the bottom and up with constraints and everything, it was found that this will not yield satisfactory results. The choice was therefore to use an already existing solver. Many solvers did not support a 5 DOF robot manipulator, but after some research the choice fell upon a MATLAB robotics toolbox(https://se.mathworks.com/help/robotics/). The toolbox makes a great interface with ROS which makes it easy to create subscribers and listeners here as well. A useful part is that it is possible to include the URDF file where MATLAB creates a robot object and represent the robot manipulator as something called rigid body tree. In other words it is just the way MATLAB parses the URDF file. In \figref{fig:showRovs} the MATLAB function $show(robot)$ is used and you can see the visualization of the robot. This can be used to check solutions and it can be though as a simpler version of RViz.  
-
+There are different methods of solving the inverse kinematics problem. One way to solve it is to solve it algebraically. Ideally you want a function that has the orientation and position as input and then gives the respective joint angles. In our case where we have a 5 DOF robot arm the equations becomes too large and too difficult to solve\cite{spong}. By looking at the equation $T_5^0=H$ where $T_5^0$ is given in \eqref{eq:T5} and $H$ is the desired transformation matrix of the end effector. It shows us that it gives a complex set of equations to solve. Another thing that must be considered is that not all joints in our system can rotate 360 degrees either so if a solution is to be found it may not work because of the limitations of the robot manipulator. \\\\
+It is also possible to use a geometric approach where the thought is to find the joint angels by projecting the manipulator onto the previous plane, and solve it using trigonometry\cite{spong}. Both \cite{spong} and \cite{Siciliano} uses simple manipulators and special cases where simplifications can be made, and do not cover our 5 dof manipulator.\\\\
+After some research in making a inverse kinematics solver from the bottom and up with constraints and everything, it was found that this will not yield satisfactory results. The choice was therefore to use an already existing solver. Several solvers were considered but the most commonly used did not have good support for a 5 DOF robot manipulator\cite{Ikfast,kdl}, but after some research the choice fell upon a MATLAB robotics toolbox\cite{MatlabRobTool}. The toolbox have a great interface with ROS which makes it easy to get and send messages via subscribers and publishers\cite{ROSWiki,MatlabRobTool}. A useful part is that it is possible to include the URDF file where MATLAB creates a robot object and represent the robot manipulator as a rigid body tree. In other words it is just the way MATLAB parses the URDF file. In \figref{fig:showRovs} the MATLAB function $show(robot)$ is used and you can see the visualization of the robot. This can be used to check solutions of inverse kinematics and path planning and it can be thought as a simpler version of rviz.  \\\\
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{img/showRobs.eps}
   \caption{MATLAB visualization of the robot using URDF}
   \label{fig:showRovs}
 \end{figure}
-
-In \lstref{lst:robotinit} seen below the robot object is created. The inverse kinematics solver object is also created. The initial solver of the inverse kinematics problem is the \textit{Broyden–Fletcher–Goldfarb–Shanno} (BFGS) algorithm which is an iterative, gradient-based optimization method that start with an initial guess to minimize a cost function \cite{MatlabRobTool}. The other solving algorith is the \textit{Levenberg-Marquardt} algorithm which is not as good if you only have the home configuration of the robot, but it is faster. So if you are to follow a path it could be a good choice to use \textit{Levenberg-Marquardt}. 
-
+In \lstref{lst:robotinit} seen below the URDF file of the robot is imported into the workspace of MATLAB. Then the inverse kinematics solver object is also created. The initial solver of the inverse kinematics problem is the \textit{Broyden–Fletcher–Goldfarb–Shanno} (BFGS) algorithm which is an iterative, gradient-based optimization method that starts with an initial guess to minimize a cost function \cite{MatlabRobTool}. The other solving algorithm is the \textit{Levenberg-Marquardt} algorithm which is not as good if you only have the zero configuration of the robot, but it is faster. So if you are to follow a path it could be a good choice to use \textit{Levenberg-Marquardt}. 
 \begin{lstlisting}[caption={MATLAB code of creating a invrerse kinematics},label={lst:robotinit},language=Matlab]
 robot = importrobot('robot.urdf');
 ik = robotics.GeneralizedInverseKinematics('RigidBodyTree',robot);
@@ -349,13 +333,11 @@ ik.SolverParameters.GradientTolerance = 0.000001;
 ik.SolverParameters.MaxTime = 0.1;
 ik.SolverParameters.AllowRandomRestart = 0;
 \end{lstlisting}
-
-The \lstref{lst:gik} show an example of finding the inverse kinematics. Here we want the end effector denoted 'right finger' which was moved to the center for a reference point, to reach the position $pd$ with the orientation $od$. It is also wanted to have some constraints such that the solution is at a feasible configuration which is seen at line 6 to 10. Again the datasheets does not state the operational limits of the joints 2,3 and 4, so the bounds has been guessed. The bounds of the twisting joints 1 and 5 are set to $\pm \pi$ to avoid solutions past these bounds. 
-
+The \lstref{lst:gik} show an example of finding the inverse kinematics. Here we want the end effector to reach the position $pd$ with the orientation $od$. It is also wanted to have some constraints such that the solution is at a feasible configuration which is seen at line 6 to 10. Again the datasheets does not state the operational limits of the joints 2,3 and 4, so the bounds has been guessed. The bounds of the twisting joints 1 and 5 are set to $\pm \pi$ to avoid solutions past these bounds e.g. rotate one and a half round is not necessary when you can rotate half a round. So it is just as security that the solver does not over complicate its solution. \\\\
 \begin{lstlisting}[caption={MATLAB code of creating a inverse kinematics},label={lst:gik},language=Matlab]
-posTgt = robotics.PositionTarget('right_finger');
+posTgt = robotics.PositionTarget('end_effector');
 posTgt.TargetPosition = pd';
-orTgt = robotics.OrientationTarget('right_finger');
+orTgt = robotics.OrientationTarget('end_effector');
 orTgt.TargetOrientation = eul2quat(od');
 jointConst = robotics.JointPositionBounds(robot);
 jointConst.Bounds = [-pi,pi;
@@ -367,7 +349,6 @@ initialguess = robot.homeConfiguration;
 [configSoln,solInfo] = ik(initialguess,jointConst,posTgt,orTgt);
 qd = [configSoln(:).JointPosition]';
 \end{lstlisting}
-
 In \figref{fig:oath} a random path has been generated. It is inside the configuration space of the robot. The projection is also plotted to get a better feel of the 3D path. It was wanted to generate a circular motion such that it would start and end in the same point. Below in \lstref{lst:path} the process of generate this simple path is shown. The desired orientation in ZYX Euler angles is $o_d = [0,0,0]^T$ which in means that the desired orientation is up.
 \begin{lstlisting}[caption={MATLAB code for creating path},label={lst:path},language=Matlab]
 t = 0:steplength:2*pi+steplength

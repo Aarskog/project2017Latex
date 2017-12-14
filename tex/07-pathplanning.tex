@@ -1,6 +1,6 @@
 \section{Trajectory planning}
 \subsection{Point to point tracking}
-The main objective is to follow a path so it is desirable to test the controller for a path as well. The \figref{fig:pathTS} shows how each joint manages to follow the desired path shown in \figref{fig:IKcom}. One can see that the robot lags behind the desired path. This path is only time dependent so it changes without respect to if the robot arm has managed to get the desired position or not.\\\\
+The manipulator is most likely to follow a path so it is desirable to test the controller for a path as well. The \figref{fig:pathTS} shows how each joint manages to follow the desired path used in chapter \ref{chap:kinematics} shown in \figref{fig:IKcom} . One can see that the robot lags behind the desired path. This path is only time dependent so it changes without respect to if the robot arm has managed to get the desired position or not.\\\\
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
     \centering
@@ -92,15 +92,15 @@ The results are given in \figref{fig:pathTSff}. One can see that the error is al
 \newpage
 
 \section{Motion planning}
-Until now we have just used a predefined path that has been made to test the different aspects of the manipulator. If it is wanted to go to one point to another it can be solved by creating a spline between these two points and do path following\cite{Spline}\cite{MatlabSpline2}\cite{MatlabSpline}. The task is not so easy if there are obstacles present. We then need to find the set-points such that the obstacle is avoided. One algorithm for solving this is the \textit{rapidly-exploring random tree (RRT)} which gives good results without any parameter tuning\cite{Lavalle}. 
+Until now we have just used a predefined path that has been made to test the different aspects of the manipulator. If it is wanted to go to one point to another it can be solved by creating a spline between these two points and do path following\cite{Spline,MatlabSpline2,MatlabSpline}. The task is not so easy if there are obstacles present. We then need to find the set-points such that the obstacle is avoided. One algorithm for solving this is the \textit{rapidly-exploring random tree (RRT)} which gives good results without any parameter tuning\cite{Lavalle}. 
 
 \subsection{Rapidly exploring Random Tree (RRT)}
-The RRT algorithm is creating a space-filling tree and in our case it can be used with obstacles in the search space such that the obstacle will be an illegal object where the three cannot expand and using the shortest path to find a path trough the tree such that we get to the desired point and avoiding the obstacle. In \autoref{alg:rdt} one can see the \textit{simple rapidly exploring dense trees(RDT)} alogithm presented by \cite{Lavalle}. The difference between RRT and RDT is that the RDT is using a dense sequence $\alpha(i)$, and for RRT $\alpha$ is a random value. This algoritm is without obstacle avoidance. If obstacle avoidance is wanted one have to check that the new edge does not intersect the obstacle if it intersects one have to find another. 
+The RRT algorithm is creating a space-filling tree. In our case it can be used with obstacles in the search space such that the obstacle will be an illegal object where the three cannot expand. Then the shortest path is used to find a path trough the tree such that we get to the desired point and avoiding the obstacle. In \autoref{alg:rdt} one can see the \textit{simple rapidly exploring dense trees(RDT)} alogithm presented by \cite{Lavalle}. The difference between RRT and RDT is that the RDT is using a dense sequence $\alpha(i)$, and for RRT $\alpha(i)$ is a random value. This algorithm is without obstacle avoidance. If obstacle avoidance is wanted one have to check that the new edge does not intersect the obstacle. If it intersects one have to find another vertex.\\\\
 \begin{algorithm}[htbp]
  %\KwData{this text}
  %\KwResult{how to write algorithm with \LaTeX2e }
  SIMPLE\_RDT($q_0$)\;
- $\mathcal{G}.init(q_0)$
+ $\mathcal{G}.init(q_0)$\;
  \For{$i=1$ to $k$}{
   $\mathcal{G}.add\_vertex(\alpha(i))$\;
   $q_n\longleftarrow NEAREST(S(\mathcal{G}),\alpha(i))$\;
@@ -116,7 +116,7 @@ The RRT algorithm is creating a space-filling tree and in our case it can be use
   \caption{2D example of the RRT algoritm}
   \label{fig:rrt2dex}
 \end{figure}
-The next step is to expand this to a 3D example and do the same there. The code provided by \cite{rrt} does include 3D RRT but not with obstacle avoidance unfortunately. The source code is given though, which mean it can be augmented into covering 3D obstacle avoidance. In \figref{fig:rrt3dex} the result of RRT in 3D space is presented. The red line is the lines between the nodes in the tree which shows a path to the desired point. 
+The next step is to expand this to a 3D example and do the same there. The code provided by \cite{rrt} does include 3D RRT, but not with obstacle avoidance unfortunately. The source code is given though, which mean it can be augmented into covering 3D obstacle avoidance. In \figref{fig:rrt3dex} the result of RRT in 3D space is presented. The red line is the lines between the nodes in the tree which shows a path to the desired point. 
 
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
@@ -137,10 +137,10 @@ The next step is to expand this to a 3D example and do the same there. The code 
     \caption{3D example of the RRT algoritm}
     \label{fig:rrtsuper}
 \end{figure*}
- As one can see in \figref{fig:rrt3dex} there are some green lines. These lines can be seen as shortcuts between each node the length of these shortcuts can be changed. In \figref{fig:rrtSpline} we have a path that is more complicated than it should be and one should maybe consider to increase the length of the shortcuts to get less nodes. These can help to choose less nodes if that is wanted.
+ As one can see in \figref{fig:rrt3dex} there are some green lines. These lines can be seen as shortcuts between each node the length of these shortcuts can be changed. In \figref{fig:rrtSpline} we have a path that is more complicated than it should be and one should maybe consider to increase the length of the shortcuts to get less nodes. This means that if the shortcut length is big enough the path will be a straight line from the desired point to the starting point of the tree. Given that the tree has found a path to the point. 
  
  \subsubsection{Obstacle avoidance}
- There is no point in doing the RRT if one does not have an obstacle. When an obstacle is added to the search space one have to check if the line connecting the new node to its parent node does not intersect with the object. The same has to be done with the shortcuts. In \figref{fig:obav} one can see the results when an obstacle is added into the workspace. The RRT algorithm finds as decent path and a spline is generated based on the results. 
+ There is no point in doing the RRT if one does not have an obstacle to avoid. When an obstacle is added to the searchspace one have to check if the line connecting the new node to its parent node does not intersect with the object. The same has to be done with the shortcuts. To check if the edgdes and lines intersects with the obstacle Smits algorithm for ray intersection with a box is used\cite{Smits,Intersection}. In \figref{fig:obav} one can see the results when an obstacle is added into the workspace. The RRT algorithm finds as decent path and a spline is generated based on the results. 
 
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
@@ -161,4 +161,3 @@ The next step is to expand this to a 3D example and do the same there. The code 
     \caption{3D example of the RRT algoritm with obstacle present}
     \label{fig:obav}
 \end{figure*}
-
