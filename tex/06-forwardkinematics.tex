@@ -2,7 +2,7 @@
 From the previous chapter we know the robot can be represented as a kinematic chain of rigid bodies and connected by revolute joints\cite{Siciliano}. The kinematics of the manipulator is described without consideration of the forces and torques causing its motion. This means that the description is geometric\cite{spong}. In this chapter the forward kinematics for this robotic manipulator is calculated and a method for solving the inverse kinematics is proposed. 
 
 \section{Forward Kinematics}
-The forward kinematics states the relationship between the end effector and the individual joints. The motion of the manipulator is obtained by composition of the elementary motions of each link with respect to the previous one\cite{Siciliano}. An easy way to get the forward kinematics is to use the Denavit-Hartenberg(DH) convention. Each homogeneous transformation $A_i$ is represented as a product of four basic transformations\cite{spong}: 
+The forward kinematics states the relationship between the end effector and the individual joints given the joint angles. The motion of the manipulator is obtained by composition of the elementary motions of each link with respect to the previous one\cite{Siciliano}. An easy way to get the forward kinematics is to use the Denavit-Hartenberg(DH) convention. Each homogeneous transformation $A_i$ is represented as a product of four basic transformations\cite{spong}: 
 \begin{align}\label{eq:Ai}
 A_i = \text{Rot}_{z,\theta_i}\text{Trans}_{z,d_i}\text{Trans}_{x,a_i}\text{Rot}_{x,\alpha_i}=
     \begin{bmatrix}
@@ -35,7 +35,7 @@ In \figref{fig:dhf} the different axis are set with respect to the DH properties
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{img/DHconv.png}
-  \caption{Kinematic scheme of the manipulator}
+  \caption{Kinematic scheme of the manipulator\cite{Kinematics}}
   \label{fig:dhf}
 \end{figure}
 \figref{fig:dhf}is used and the following DH parameters are found:
@@ -172,7 +172,7 @@ where $s_{ijk} = \sin{(q_i + q_j + q_k)}$ and the same for $c_{ijk}$. Notice tha
 
 
 
-\subsection{Jacobian}
+\subsection{Jacobian Matrix}
 The geometric Jacobian gives the relationship between the joint velocities and the linear and angular velocities of the end effector\cite{Siciliano}\cite{spong}. As we already know the forward kinematics can be written as:
 \begin{align*}
     T(q) = 
@@ -307,24 +307,24 @@ which has the full rank of $5$.
 
 
 \section{Inverse Kinematics}
-The forward kinematics establishes the relationship between the joint variables and the position and orientation of the end effector. The problem of inverse kinematics is to find the joint variables when the position and orientation of the end effector is given. This is wanted because the desired position or trajectory is given in the Cartesian world frame. Unfortunately the inverse kinematics problem is not as easy and straight forward as the forward kinematics problem. \cite{Siciliano} lists up several reasons the inverse kinematics problem is more complex:
+The forward kinematics establishes the relationship between the joint variables and the position and orientation of the end effector. The problem of inverse kinematics is to find the joint variables when the position and orientation of the end effector is given. This is wanted because the desired position or trajectory is given in the Cartesian world frame. Unfortunately the inverse kinematics problem is not as easy and straight forward as the forward kinematics problem. Reference \cite{Siciliano} lists up several reasons the inverse kinematics problem is more complex:
 \begin{itemize}
     \item The equations to solve are in general nonlinear, and thus it is not always possible to find a closed-form solution.
     \item Multiple solutions may exist.
     \item Infinite solutions may exist, e.g., in the case of a kinematically redundant manipulator.
     \item There might be no admissible solutions, in view of the manipulator kinematic structure.
 \end{itemize}
-There are different methods of solving the inverse kinematics problem. One way to solve it is to solve it algebraically. Ideally you want a function that has the orientation and position as input and then gives the respective joint angles. In our case where we have a 5 DOF robot arm the equations becomes too large and too difficult to solve\cite{spong}. By looking at the equation $T_5^0=H$ where $T_5^0$ is given in \eqref{eq:T5} and $H$ is the desired transformation matrix of the end effector. It shows us that it gives a complex set of equations to solve. Another thing that must be considered is that not all joints in our system can rotate 360 degrees either so if a solution is to be found it may not work because of the limitations of the robot manipulator. \\\\
+There are different methods of solving the inverse kinematics problem. One method is to compute an algebraic solution. Ideally you want a function that has the orientation and position as input and then gives the respective joint angles. In our case where we have a 5 DOF robot arm the equations becomes too large and too difficult to solve\cite{spong}. By looking at the equation $T_5^0=H$ where $T_5^0$ is given in \eqref{eq:T5} and $H$ is the desired transformation matrix of the end effector. It shows us that it gives a complex set of equations to solve. Another thing that must be considered is that not all joints in our system can rotate 360 degrees either so if a solution is to be found it may not work because of the limitations of the robot manipulator. \\\\
 It is also possible to use a geometric approach where the thought is to find the joint angels by projecting the manipulator onto the previous plane, and solve it using trigonometry\cite{spong}. Both \cite{spong} and \cite{Siciliano} uses simple manipulators and special cases where simplifications can be made, and do not cover our 5 dof manipulator.\\\\
-After some research in making a inverse kinematics solver from the bottom and up with constraints and everything, it was found that this will not yield satisfactory results. The choice was therefore to use an already existing solver. Several solvers were considered but the most commonly used did not have good support for a 5 DOF robot manipulator\cite{Ikfast,kdl}, but after some research the choice fell upon a MATLAB robotics toolbox\cite{MatlabRobTool}. The toolbox have a great interface with ROS which makes it easy to get and send messages via subscribers and publishers\cite{ROSWiki,MatlabRobTool}. A useful part is that it is possible to include the URDF file where MATLAB creates a robot object and represent the robot manipulator as a rigid body tree. In other words it is just the way MATLAB parses the URDF file. In \figref{fig:showRovs} the MATLAB function $show(robot)$ is used and you can see the visualization of the robot. This can be used to check solutions of inverse kinematics and path planning and it can be thought as a simpler version of rviz.  \\\\
+After some research in making a inverse kinematics solver from the bottom and up with constraints and everything, it was found that this will not yield satisfactory results. The choice was therefore to use an already existing solver. Several solvers were considered but the most commonly used did not have good support for a 5 DOF robot manipulator\cite{Ikfast,kdl}, but after some research the choice fell upon a MATLAB robotics toolbox\cite{MatlabRobTool}. The toolbox has a great interface with ROS which makes it easy to get and send messages via subscribers and publishers\cite{ROSWiki,MatlabRobTool}. A useful part is that it is possible to include the URDF file where MATLAB creates a robot object and represent the robot manipulator as a rigid body tree. In other words it is just the way MATLAB parses the URDF file. In \figref{fig:showRovs} the MATLAB function $show(robot)$ is used and you can see the visualization of the robot. This can be used to check solutions of inverse kinematics and path planning and it can be thought as a simpler version of rviz.  \\\\
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{img/showRobs.eps}
   \caption{MATLAB visualization of the robot using URDF}
   \label{fig:showRovs}
 \end{figure}
-In \lstref{lst:robotinit} seen below the URDF file of the robot is imported into the workspace of MATLAB. Then the inverse kinematics solver object is also created. The initial solver of the inverse kinematics problem is the \textit{Broyden–Fletcher–Goldfarb–Shanno} (BFGS) algorithm which is an iterative, gradient-based optimization method that starts with an initial guess to minimize a cost function \cite{MatlabRobTool}. The other solving algorithm is the \textit{Levenberg-Marquardt} algorithm which is not as good if you only have the zero configuration of the robot, but it is faster. So if you are to follow a path it could be a good choice to use \textit{Levenberg-Marquardt}. 
-\begin{lstlisting}[caption={MATLAB code of creating a invrerse kinematics},label={lst:robotinit},language=Matlab]
+In \lstref{lst:robotinit} seen below the URDF file of the robot is imported into the workspace of MATLAB. Then the inverse kinematics solver object is also created. The initial solver of the inverse kinematics problem is the \textit{Broyden–Fletcher–Goldfarb–Shanno} (BFGS) algorithm which is an iterative, gradient-based optimization method that starts with an initial guess to minimize a cost function \cite{MatlabRobTool}. The other solving algorithm is the \textit{Levenberg-Marquardt} algorithm, which is not as good if the initial point is far away from the solution, but it is faster if you are close to the solution. So if you are to follow a path, it could be a good choice to use \textit{Levenberg-Marquardt}\cite{MatlabRobTool}. 
+\begin{lstlisting}[caption={MATLAB code of creating and specifying an inverse kinematics object},label={lst:robotinit},language=Matlab]
 robot = importrobot('robot.urdf');
 ik = robotics.GeneralizedInverseKinematics('RigidBodyTree',robot);
 ik.ConstraintInputs={'joint','position','orientation'};
@@ -333,8 +333,8 @@ ik.SolverParameters.GradientTolerance = 0.000001;
 ik.SolverParameters.MaxTime = 0.1;
 ik.SolverParameters.AllowRandomRestart = 0;
 \end{lstlisting}
-The \lstref{lst:gik} show an example of finding the inverse kinematics. Here we want the end effector to reach the position $pd$ with the orientation $od$. It is also wanted to have some constraints such that the solution is at a feasible configuration which is seen at line 6 to 10. Again the datasheets does not state the operational limits of the joints 2,3 and 4, so the bounds has been guessed. The bounds of the twisting joints 1 and 5 are set to $\pm \pi$ to avoid solutions past these bounds e.g. rotate one and a half round is not necessary when you can rotate half a round. So it is just as security that the solver does not over complicate its solution. \\\\
-\begin{lstlisting}[caption={MATLAB code of creating a inverse kinematics},label={lst:gik},language=Matlab]
+The \lstref{lst:gik} show an example of finding the inverse kinematics. Here we want the end effector to reach the position $p_d$ with the orientation $o_d$. It is also wanted to have some constraints such that the solution is at a feasible configuration which is seen at line 6 to 10. Again the datasheets does not state the operational limits of the joints 2,3 and 4, so the bounds has been guessed. The bounds of the twisting joints 1 and 5 are set to $\pm \pi$ to avoid solutions past these bounds e.g. rotate one and a half round is not necessary when you can rotate half a round. So it is just as security that the solver does not over complicate its solution. \\\\
+\begin{lstlisting}[caption={MATLAB code for specifying $p_d$, $o_d$ and joint bounds which is used to find a solution of the inverse kinematics problem},label={lst:gik},language=Matlab]
 posTgt = robotics.PositionTarget('end_effector');
 posTgt.TargetPosition = pd';
 orTgt = robotics.OrientationTarget('end_effector');
@@ -349,7 +349,7 @@ initialguess = robot.homeConfiguration;
 [configSoln,solInfo] = ik(initialguess,jointConst,posTgt,orTgt);
 qd = [configSoln(:).JointPosition]';
 \end{lstlisting}
-In \figref{fig:oath} a random path has been generated. It is inside the configuration space of the robot. The projection is also plotted to get a better feel of the 3D path. It was wanted to generate a circular motion such that it would start and end in the same point. Below in \lstref{lst:path} the process of generate this simple path is shown. The desired orientation in ZYX Euler angles is $o_d = [0,0,0]^T$ which in means that the desired orientation is up.
+In \figref{fig:oath} a random path has been generated. It is inside the configuration space of the robot. The projection onto the xy-plane, xz-plane and yz-plane plane is also plotted for convenience to get a better feel of the 3D path. The next goal is to generate a circular motion such that it would start and end in the same point. Below in \lstref{lst:path} the process of generate this simple path is shown. The desired orientation in ZYX Euler angles is $o_d = [0,0,0]^T$ which in means that the desired orientation is up.
 \begin{lstlisting}[caption={MATLAB code for creating path},label={lst:path},language=Matlab]
 t = 0:steplength:2*pi+steplength
 xpath = 0.035*cos(t)+0.09;
@@ -357,7 +357,7 @@ ypath = 0.035*sin(t)+0.09;
 zpath = 0.050*sin(t)+0.25;
 path = [xpath;ypath;zpath];
 \end{lstlisting}
-In \figref{fig:compa} the generated path from \lstref{lst:path} and the calculated path from the inverse kinematics is plotted. Equation \eqref{eq:T5} was used to convert the joint paths to xyz coordinates in the world frame. The results is very good and the largest error is an error of $0.0092$ radians which corresponds to approximately $0.5$ degrees. The mean is $8.54\cdot10^{-6}$ radians. 
+In \figref{fig:compa} the generated path from \lstref{lst:path} and the calculated path from the inverse kinematics is plotted. Equation \eqref{eq:T5} was used to convert the joint paths to xyz coordinates in the world frame. The results is very good and the largest error is an error of $0.0092$ radians which corresponds to approximately $0.5$ degrees. The mean error is $8.54\cdot10^{-6}$ radians. 
 
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
@@ -379,17 +379,14 @@ In \figref{fig:compa} the generated path from \lstref{lst:path} and the calculat
     \label{fig:IKcom}
 \end{figure*}
 
-In \figref{fig:outOC} some of the path is moved outside the configuration space of the robot and one can see that the solver makes the path at its best effort. It other words if given a path it will follow it until it goes out of the configuration space and then it will follow the path that mimimzes the cost function of the solver. 
-
-
-
+In \figref{fig:outOC} some of the path is moved outside the configuration space of the robot and one can see that the solver makes the path at its best effort. In other words, if given a path, it will follow it until it goes out of the configuration space, and then it will follow the path that minimizes the cost function of the solver. 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{img/outOS.eps}
   \caption{Test of the solver when the path is partially out of the configuration space}
   \label{fig:outOC}
 \end{figure}
-
+In this chapter the forward kinematics has been found along the inverse kinematics. All these are important aspects of a robot system and will used in further work and in this project. 
 
 
 

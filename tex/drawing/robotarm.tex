@@ -79,12 +79,12 @@
 \begin{tikzpicture}
     %\robotbase
     \angann{\thetaone}{$q_2$}
-    \lineann[-1]{\thetaone}{\Lone}{$L_2$}
+    \lineann[-1]{\thetaone}{\Lone}{$a_2$}
     \link(\thetaone:\Lone);
     \joint
     \begin{scope}[shift=(\thetaone:\Lone), rotate=\thetaone]
         \angann{\thetatwo}{$q_3$}
-        \lineann[-1.5]{\thetatwo}{\Ltwo}{$L_3$}
+        \lineann[-1.5]{\thetatwo}{\Ltwo}{$a_3$}
         \link(\thetatwo:\Ltwo);
         \joint
         \begin{scope}[shift=(\thetatwo:\Ltwo), rotate=\thetatwo]
