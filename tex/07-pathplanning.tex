@@ -45,7 +45,7 @@ The only information the robot gets is the point it is supposed to get to. It is
     \frac{1}{2}(v_i+v_{i+1}) \quad  sgn(v_i)= sgn(v_{i+1})
     \end{cases}
 \end{align*}
-where $v_i = \frac{q_i-q_{i-1}}{t_i-t_{i-1}}$ and when you get to the last point $N$ the joint velocity $q_N$ should be zero. Since the error between the executed trajectory and the desired trajectory can be seen as a time delay one can also add the next points as a reference:
+where $v_i = \frac{q_i-q_{i-1}}{t_i-t_{i-1}}$ and when the last point $N$ is reached, the joint velocity $q_N$ should be zero. Since the error between the executed trajectory and the desired trajectory can be seen as a time delay one can also add the next points as a reference:
 \begin{align*}
     \tilde{q} = q_{d_i}-q + \frac{q_{d_{i+1}}-q }{2}+\frac{q_{d_{i+2}}-q }{2}
 \end{align*}
@@ -106,18 +106,17 @@ The RRT algorithm is creating a space-filling tree. In our case it can be used w
   $q_n\longleftarrow NEAREST(S(\mathcal{G}),\alpha(i))$\;
   $\mathcal{G}.add\_edge(q_n,\alpha(i))$\;
  }
- \caption{}
+ \caption{RDT algorithm}
  \label{alg:rdt}
 \end{algorithm}
-\cite{rrt} provides code to find a path using RRT. In \figref{fig:rrt2dex} an example is given of the algorithm. An obstacle has been placed in the search space and the wanted point is behind the obstacle relative to the start point which in this case is the origin \cite{rrt}.
+Reference \cite{rrt} provides code to find a path using RRT. In \figref{fig:rrt2dex} an example is given of the algorithm. An obstacle has been placed in the search space and the wanted point is behind the obstacle relative to the start point which in this case is the origin \cite{rrt}.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{img/rrt2dex.eps}
   \caption{2D example of the RRT algoritm}
   \label{fig:rrt2dex}
 \end{figure}
-The next step is to expand this to a 3D example and do the same there. The code provided by \cite{rrt} does include 3D RRT, but not with obstacle avoidance unfortunately. The source code is given though, which mean it can be augmented into covering 3D obstacle avoidance. In \figref{fig:rrt3dex} the result of RRT in 3D space is presented. The red line is the lines between the nodes in the tree which shows a path to the desired point. 
-
+The next step is to expand this to a 3D example and do the same there. The code provided by \cite{rrt} does include 3D RRT, but not with obstacle avoidance unfortunately. But the source code is given, which mean it can be augmented into covering 3D obstacle avoidance. In \figref{fig:rrt3dex} the result of RRT in 3D space is presented. The red line is the lines between the nodes in the tree which shows a path to the desired point. 
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
     \centering
