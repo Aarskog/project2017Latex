@@ -24,19 +24,23 @@ where $c_{\theta_i} = \cos{(\theta_i)}$ and $s_{\theta_i} = \sin{(\theta_i)}$, a
           0&1
       \end{bmatrix}, \quad i<j
  \end{align*}
- where $R^i_j = R^i_{i+1}R...R^{j-1}_j$ which is the orientation of $o_jx_jy_jz_j$ relative to $o_ix_iy_iz_i$. $o^i_j$ is the coordinate vector given in the world frame, which can be written as $o^i_j = o^i_{j-1}+R^{i}_{j-1}o^{j-1}_j$. This is useful when finding the Jacobian of the robot and to verify that the end effector is at the wanted position and has the wanted orientation in the Cartesian world frame. When finding the DH-parameters they have to satisfy the two following properties \cite{spong}
+ where $R^i_j = R^i_{i+1}R...R^{j-1}_j$ which is the orientation of $o_jx_jy_jz_j$ relative to $o_ix_iy_iz_i$. $o^i_j$ is the coordinate vector given in the world frame, which can be written as $o^i_j = o^i_{j-1}+R^{i}_{j-1}o^{j-1}_j$. This is useful when finding the Jacobian of the robot and to verify that the end effector is at the wanted position and has the wanted orientation in the Cartesian world frame. When finding the DH-parameters they have to satisfy the two following properties\cite{spong}:
  \begin{itemize}
      \item The axis $x_n$ is perpendicular to the axis $z_{n-1}$
      \item The axis $x_n$ intersects the axis $z_{n-1}$
  \end{itemize}
+
 In \figref{fig:dhf} the different axis are set with respect to the DH properties stated above\cite{Kinematics}.
+
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{img/DHconv.png}
-  \caption{Kinematic scheme of the manipulator\cite{Kinematics}}
+  \caption[Kinematic scheme of the manipulator]{Kinematic scheme of the manipulator\cite{Kinematics}}
   \label{fig:dhf}
-\end{figure}\clearpage
-\figref{fig:dhf}is used and the following DH parameters are found:
+\end{figure}%\clearpage
+
+\figref{fig:dhf} is used and the following DH parameters are found:
+
 \begin{table}[htbp]
     \centering
     \caption{DH-parameters of the manipulator}
@@ -52,7 +56,8 @@ In \figref{fig:dhf} the different axis are set with respect to the DH properties
          5 & 0 & 0 & $d_5$ & $q_5$\\
          \bottomrule
     \end{tabular}
-\end{table}\\
+\end{table}
+
 where $d_1 = 0.0506m$, $a_2 = 0.1347m$, $a_3 = 0.0712m$ and $d_5 = 0.1765m$ for the model. As previously mentioned in Section \ref{sec:massInert}, the real values need to be measured properly since the data sheet of the robot is insufficient and this is just guesstimated values\cite{Crustcrawler}. 
 Now it is possible to calculate $A_i$ from \eqref{eq:Ai} for each link: 
 \begin{align*}
@@ -177,7 +182,7 @@ where $s_{ijk} = \sin{(q_i + q_j + q_k)}$ and the same for $c_{ijk}$. Notice tha
 
 
 \subsection{Jacobian Matrix}
-The geometric Jacobian gives the relationship between the joint velocities and the linear and angular velocities of the end effector\cite{Siciliano,spong}. As we already know the forward kinematics can be written as:
+The geometric Jacobian gives the relationship between the joint velocities and the linear and angular velocities of the end effector\cite{Siciliano,spong}. As we already know, the forward kinematics can be written as:
 \begin{align*}
     T(q) = 
     \begin{bmatrix}
@@ -185,7 +190,7 @@ The geometric Jacobian gives the relationship between the joint velocities and t
         0 & 1
     \end{bmatrix}
 \end{align*}
-we want to express the linear velocity $\dot{p}$ and angular velocity $\omega$ as a function of the joint velocities $\dot{q}$. In \cite{Siciliano} the relations is stated as:
+We want to express the linear velocity $\dot{p}$ and angular velocity $\omega$ as a function of the joint velocities $\dot{q}$. In \cite{Siciliano} the relations is stated as:
 \begin{equation}
     \begin{aligned}\label{eq:velo}
         \dot{p} &= J_P(q)\dot{q}\\
@@ -227,7 +232,7 @@ can be calculated in the following way:
         \begin{bmatrix} z_{i-1} \times (p_e-p_{i-1}) \\ z_{i-1} \end{bmatrix} & \text{for a revolute joint}
     \end{cases}
 \end{align*}
-Since our manipulator only has revolute joints, the geometric Jacobian becomes
+Since our manipulator only has rotating joints, the geometric Jacobian becomes
 \begin{align*}
     J(q) = 
     \begin{bmatrix}
@@ -353,7 +358,7 @@ initialguess = robot.homeConfiguration;
 [configSoln,solInfo] = ik(initialguess,jointConst,posTgt,orTgt);
 qd = [configSoln(:).JointPosition]';
 \end{lstlisting}
-In \figref{fig:oath} a random path has been generated. It is inside the configuration space of the robot. The projection onto the xy-plane, xz-plane and yz-plane plane is also plotted for convenience to get a better feel of the 3D path. The next goal is to generate a circular motion such that it would start and end in the same point. Below in \lstref{lst:path} the process of generate this simple path is shown. The desired orientation in ZYX Euler angles is $o_d = [0,0,0]^T$ which in means that the desired orientation is up.
+In \figref{fig:oath} a random path has been generated. It is inside the configuration space of the robot. The projection onto the xy-plane, xz-plane and yz-plane plane is also plotted for convenience to get a better feel of the 3D path. The goal was to generate a circular motion such that it would start and end in the same point. Below in \lstref{lst:path} the process of generate this simple path is shown. The desired orientation in ZYX Euler angles is $o_d = [0,0,0]^T$ which in means that the desired orientation is up.
 \begin{lstlisting}[caption={MATLAB code for creating path},label={lst:path},language=Matlab]
 t = 0:steplength:2*pi+steplength
 xpath = 0.035*cos(t)+0.09;

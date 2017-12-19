@@ -1,6 +1,6 @@
 \chapter{Control and Path planning}
-Now that a functioning simulation environment is created and the inverse kinematics problem is solved, it is time to connect these and create a controller to steer the robot manipulator. The initial thought is multivariable control on top on single joint control. The multivariable control is done in MATLAB, but it can be done in Python as well, but since the inverse kinematics problem is solved in MATLAB it is easiest to do the control in MATLAB. Code for the controller in Python is also provided. \\\\
-The multivariable control will use the joint positions and joint velocities to compute the desired joint torques which is sent to joint PID controllers and handled by using the ROS control package\cite{ROScontrol}. The first thing to do is therefore to create the individual joint PID controllers. To create these controllers two new files are needed. A new launch file must be created. It is possible to just append the launch file, but to make everything more understandable and if the package is to be used on the real robot it is easier to make a new launch file that can be included in other launch files. The task of the \textit{control.launch} file is to spawn a node which includes all of the five controllers. In \lstref{lst:launchControl} one can see the the code to spawn the controllers. It consists of two statements. The first is loading the parameters of the controllers from the YAML file. Then with the parameters loaded, a node is created and it makes the joint controller services that the wanted joint torques can be published to. The \textit{control.launch} file is launched from the initial launch file.
+Now that a functioning simulation environment is created and the inverse kinematics problem is solved, it is time to connect these and create a controller to steer the robot manipulator. The initial thought is multivariable control on top on single joint control. The multivariable control is done in MATLAB, but it can be done in Python as well. Since the inverse kinematics problem is solved in MATLAB it is easiest to do the control in MATLAB. Code for the controller in Python is also provided. \\\\
+The multivariable control will use the joint positions and joint velocities to compute the desired joint torques which is sent to joint PID controllers and handled by using the ROS control package\cite{ROScontrol}. The first thing to do is therefore to create the individual joint PID controllers. To create these controllers two new files are needed. A new launch file must be created. It is possible to just append the already made launch file, but to make everything more understandable and if the package is to be used on the real robot it is easier to make a new launch file that can be included in other launch files. The task of the \textit{control.launch} file is to spawn a node which includes all of the five controllers. In \lstref{lst:launchControl} one can see the the code to spawn the controllers. It consists of two statements. The first is loading the parameters of the controllers from the YAML file. Then with the parameters loaded, a node is created and it makes the joint controller services that the wanted joint torques can be published to. The \textit{control.launch} file is launched from the initial launch file.
 \begin{lstlisting}[language=xml,caption={Spawns the controller node},label={lst:launchControl}]
 <rosparam file="(find five_dof_robotarm)/config/joints.yaml" command="load"/>
 
@@ -12,7 +12,7 @@ The multivariable control will use the joint positions and joint velocities to c
     fourth_joint_controller
     fifth_joint_controller"/>
 \end{lstlisting}
-Below in \lstref{lst:matlabPubl} one can see how the publishers are created which will publish the desired joint torques calculated by the multivariable controller to the joint controllers.
+Below in \lstref{lst:matlabPubl} one can see how the publishers are created in MATLAB which will publish the desired joint torques calculated by the multivariable controller to the joint controllers.
 \begin{lstlisting}[language=Matlab,caption={MATLAB code for creating the publishers.},label={lst:matlabPubl}]
 pub1 = rospublisher('/five_dof_robotarm/base_to_turntable_controller/command','std_msgs/Float64');
 pub2 = rospublisher('/five_dof_robotarm/second_joint_controller/command','std_msgs/Float64');
@@ -70,7 +70,7 @@ Another important functionality to do control is to get the feedback from Gazebo
 
 \section{Control}
 \subsection{PD controller with gravity compensation}
-The controller that is going to be used is a simple PD controller with gravity compensation derived by \cite{spong,Siciliano}. It is a simple and easy to use controller where the only thing that needs to be found is the gravity components. Other controllers that can be used is Inverse Dynamics Control, Robust Control and Adaptive Control \cite{spong,Siciliano}, which requires to find more about the dynamics of the manipulator. The PD controller is:
+The controller that is going to be used is a simple PD controller with gravity compensation derived by \cite{spong,Siciliano}. It is a simple and easy to use controller where the only thing that needs to be found is the gravity components and tune the controller gains $K_p$ and $K_d$. Other controllers that can be used is Inverse Dynamics Control, Robust Control and Adaptive Control \cite{spong,Siciliano}, which requires to find more about the dynamics of the manipulator. The PD controller is:
 $$
     u=K_p\tilde{q} - K_d\dot{q} +g(q)
 $$
@@ -78,7 +78,7 @@ $$
  \begin{align}\label{eq:gravity}
  g(q) = \frac{\partial P}{\partial q_k}
  \end{align}
- where the total potential energy for a n-link robot is $P = \sum^n_{i=1}P_i$ and $P_i$ is the potential energy for each individual link. For this specific manipulator the center of mass is assumed in the geometric center of each link. In \cite{Siciliano} this controller is proven by using Lyapunov direct method to be globally asymptotically stable(GAS) as long as $K_d$ and $K_p$ is positive definite. It is important to keep in mind that if the online computing of $g(q)$ is not perfect, the statement of GAS does not hold. Therefore, based on the assumptions made about the mass and measurements in Chapter \ref{chap:soft}, the controller can not guarantee GAS. 
+ where the total potential energy for a n-link robot is $P = \sum^n_{i=1}P_i$ and $P_i$ is the potential energy for each individual link. For this specific manipulator the center of mass is assumed in the geometric center of each link. In \cite{Siciliano} this controller is proven by using Lyapunov direct method to be globally asymptotically stable(GAS) as long as $K_d$ and $K_p$ are positive definite. It is important to keep in mind that if the online computing of $g(q)$ is not perfect, the statement of GAS does not hold. Therefore, based on the assumptions made about the mass and measurements in Chapter \ref{chap:soft}, the controller can not guarantee GAS. 
  
  \subsection{Deriving the gravitational effect}
  The robot starts and ends with twisting joints and only the three joints in the middle are rotational joints. This means that the potential energy is only dependent on $q_2$, $q_3$ and $q_4$ which makes calculating the potential energy a bit easier. Because of this, the potential energy can be calculated by using a 2D sketch as shown in \figref{draw:pot-rob}.\\\\
@@ -107,32 +107,42 @@ In \eqref{eq:potE} the potential energy is calculated for each link in the robot
 where $d_5 = L_4+L_ 5$ i.e. $L_4$ is the part up to the rotational joint. $L_5$ and $m_5$ is the rotational joint and the gripper together.\\\\
 To calculate individual gravity components \eqref{eq:gravity} is used with \eqref{eq:potE}:
 
- \begin{align*}
-    g_1 &= 0
-    \\
-    g_2 &= \frac{\partial P}{\partial q_2} = 
-    m_2g\frac{a_2}{2}\sin{(q_2)}+
-    m_3g\left( a_2 \sin{(q_2)} + \frac{a_3}{2}\sin{(q_2+q_3)} \right)\\&+
-    m_4g\left( a_2 \sin{(q_2)} + a_3\sin{(q_2 + q_3)} + \frac{L_4}{2}\sin{(q_2+q_3+q_4)} \right)\\&+
-    m_5g\left( a_2 \sin{(q_2)} + a_3\sin{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)} \right)
-    \\
-    g_3 &= \frac{\partial P}{\partial q_3} =
-    m_3g\frac{a_3}{2}\sin{(q_2+q_3)} +
-    m_4g\left( a_3\sin{(q_2 + q_3)} + \frac{L_4}{2}\sin{(q_2+q_3+q_4)} \right)\\&+
-    m_5g\left(  a_3\sin{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)} \right)
-    \\
-    g_4 &=\frac{\partial P}{\partial q_4} = 
-    m_4g\frac{L_4}{2}\sin{(q_2+q_3+q_4)}+
-    m_5g\left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)}
-    \\
-    g_5 &= \frac{\partial P}{\partial q_5} = 0
-    \\
-    g(q) &= [g_1,g_2,g_3,g_4,g_5]^T
- \end{align*}
+\begin{align*}
+    \begin{split}
+        g_1 &= 0
+    \end{split}\\
+    \begin{split}
+        g_2 &= \frac{\partial P}{\partial q_2} = 
+        m_2g\frac{a_2}{2}\sin{(q_2)}+
+        m_3g\left( a_2 \sin{(q_2)} + \frac{a_3}{2}\sin{(q_2+q_3)} \right)\\&+
+        m_4g\left( a_2 \sin{(q_2)} + a_3\sin{(q_2 + q_3)} + \frac{L_4}{2}\sin{(q_2+q_3+q_4)} \right)\\&+
+        m_5g\left( a_2 \sin{(q_2)} + a_3\sin{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)} \right)
+    \end{split}\\
+    \begin{split}
+        g_3 &= \frac{\partial P}{\partial q_3} =
+        m_3g\frac{a_3}{2}\sin{(q_2+q_3)} +
+        m_4g\left( a_3\sin{(q_2 + q_3)} + \frac{L_4}{2}\sin{(q_2+q_3+q_4)} \right)\\&+
+        m_5g\left(  a_3\sin{(q_2 + q_3)} + \left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)} \right)
+    \end{split}\\
+    \begin{split}
+        g_4 &=\frac{\partial P}{\partial q_4} = 
+        m_4g\frac{L_4}{2}\sin{(q_2+q_3+q_4)}+
+        m_5g\left(L_4 + \frac{L_5}{2} \right)\sin{(q_2+q_3+q_4)}
+    \end{split}\\
+    \begin{split}
+        g_5 &= \frac{\partial P}{\partial q_5} = 0
+    \end{split}\\
+    \begin{split}
+        g(q) &= [g_1,g_2,g_3,g_4,g_5]^T
+     \end{split}
+\end{align*}
+
+ 
 This is the gravity components that each joint will \textit{feel} from the other links and by adding this to a PD controller it will compensate for this disturbance. 
 
 \section{Test of controller}
-Now that a controller is in place it is time to test it. The first thing to test is the gravity compensation. One way to view the results is to watch the robot when it is in a stationary state. The only input that are sent into the individual joint torque controllers should only be the data computed by the gravity compensation part. Some random desired joint angles is chosen and the following results can be viewed in \tabref{table:gravity}. The simulation is done in Gazebo.\\\\
+Now that a controller is in place it is time to test it. The first thing to test is the gravity compensation. One way to view the results is to watch the robot when it is in a stationary state. The only input that are sent into the individual joint torque controllers should only be the data computed by the gravity compensation part. Some random desired joint angles is chosen and the following results can be viewed in \tabref{table:gravity}. The simulation is done in Gazebo.
+
 \begin{table}[htbp]
 \centering
 \caption{Test results of the precision of the gravity compensation}
@@ -149,7 +159,8 @@ Now that a controller is in place it is time to test it. The first thing to test
         \bottomrule
     \end{tabular}
 \end{table}
-The results are satisfactory. There is some error which means that the end effector will not be completely at its desired position. The biggest error is in the second joint which makes sense since the error propagates from the end effector and down to the first joint which will have the accumulated error from all the calculated gravity components.\\\\
+
+The results are satisfactory. There is some error which means that the end effector will not be completely at its desired position. The biggest error is in the second joint which makes sense since the error propagates from the end effector and down to the second joint which will have the accumulated error from all the calculated gravity components.\\\\
 Now that we know that the gravity compensation is working we can start to test the controller. The gain matrices $K_p$ and $K_d$ are implemented as positive definite diagonal matrices.\\\\
 \def\picsSiz{1.08}
 \begin{figure*}[htbp]
@@ -189,7 +200,7 @@ Now that we know that the gravity compensation is working we can start to test t
     \caption{Different plots of recorded data when a large step in desired joint angles is introduced}
     \label{fig:LS}
 \end{figure*}
-In \figref{fig:LS} data is plotted from a random configuration to a kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking, this case may be unrealistic, but it can give a better indication of the robustness of the manipulator. In \figref{fig:LSqdot} the joint velocity $\dot{q}_5$ is not as smooth as the other velocities. This can be for a number of reasons. When doing the simulations it was discovered that Gazebo did not handle small inertias very well and it is not known how Gazebo calculates the joint velocities. This combined with the small inertia may lead to the uneven results. %By looking at the other plots as well it does not look like the velocity is what Gazebo tells us it is.  
+In \figref{fig:LS} data is plotted from a random configuration to a kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking, this case may be unrealistic, but it can give a better indication of the robustness of the controller. %In \figref{fig:LSqdot} the joint velocity $\dot{q}_5$ is not as smooth as the other velocities. This can be for a number of reasons. When doing the simulations it was discovered that Gazebo did not handle small inertias very well and it is not known how Gazebo calculates the joint velocities. This combined with the small inertia may lead to the uneven results. %By looking at the other plots as well it does not look like the velocity is what Gazebo tells us it is.  
 
 
 %. From \figref{fig:LSq} one can see $q_5$ converges rather smooth and the gains will be used for further testing. It may be worth to mention that when doing set point tracking the steps are not be this large and the gains can be altered for better performance.  \\\\

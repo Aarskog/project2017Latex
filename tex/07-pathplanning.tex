@@ -1,3 +1,4 @@
+\clearpage
 \section{Trajectory planning}
 \subsection{Point to point tracking}
 The manipulator is most likely to follow a path so it is desirable to test the controller for a path as well. The \figref{fig:pathTS} shows how each joint manages to follow the desired path used in Chapter \ref{chap:kinematics} shown in \figref{fig:IKcom} . One can see that the robot lags behind the desired path. This path is only time dependent so it changes without respect to if the robot arm has managed to get the desired position or not.\\\\
@@ -37,7 +38,7 @@ The manipulator is most likely to follow a path so it is desirable to test the c
     \caption{Path following}
     \label{fig:pathTS}
 \end{figure*}
-The only information the robot gets is the point it is supposed to get to. It is therefore wanted to pass it some more information about the path. Reference \cite{Siciliano} gives a method to use the slope of the trajectory to find the joint velocity in the trajectory:
+The only information the robot gets is the point it is supposed to get to and it changes before it can reach it. It is therefore wanted to pass it some more information about the path. Reference \cite{Siciliano} gives a method to use the slope of the trajectory to find the joint velocity in the trajectory:
 \begin{align*}
     \dot{q}_{d_i} = 
     \begin{cases}
@@ -92,10 +93,10 @@ The results are given in \figref{fig:pathTSff}. One can see that the error is al
 \newpage
 
 \section{Motion planning}
-Until now we have just used a predefined path that has been made to test the different aspects of the manipulator. If it is wanted to go to one point to another it can be solved by creating a spline between these two points and do path following\cite{Spline,MatlabSpline2,MatlabSpline}. The task is not so easy if there are obstacles present. We then need to find the set-points such that the obstacle is avoided. One algorithm for solving this is the \textit{rapidly-exploring random tree (RRT)} which gives good results without any parameter tuning\cite{Lavalle}. 
+Until now we have just used a predefined path that has been made to test the different aspects of the controller. If it is wanted to go from one point to another, it can be solved by creating a spline between these two points and do path following\cite{Spline,MatlabSpline2,MatlabSpline}. The task is not so easy if there are obstacles present. We then need to find the set-points such that the obstacle is avoided. One algorithm for solving this is the \textit{rapidly-exploring random tree (RRT)} which gives good results without any parameter tuning\cite{Lavalle}. 
 
 \subsection{Rapidly exploring Random Tree (RRT)}
-The RRT algorithm is creating a space-filling tree. In our case it can be used with obstacles in the search space such that the obstacle will be an illegal object where the three cannot expand. Then the shortest path is used to find a path trough the tree such that we get to the desired point and avoiding the obstacle. In \autoref{alg:rdt} one can see the \textit{simple rapidly exploring dense trees(RDT)} algorithm presented by \cite{Lavalle}. The difference between RRT and RDT is that the RDT is using a dense sequence $\alpha(i)$, and for RRT $\alpha(i)$ is a random value. This algorithm is without obstacle avoidance. If obstacle avoidance is wanted one have to check that the new edge does not intersect the obstacle. If it intersects one have to find another vertex.\\\\
+The RRT algorithm is creating a space-filling tree. In our case it can be used with obstacles in the search space such that the obstacle will be an illegal object where the three cannot expand. Then the shortest path is used to find a path trough the tree such that we get to the desired point and avoiding the obstacle. In \autoref{alg:rdt} one can see the \textit{simple rapidly exploring dense trees(RDT)} algorithm presented by \cite{Lavalle}. The difference between RRT and RDT is that the RDT is using a dense sequence $\alpha(i)$, and for RRT $\alpha(i)$ is a random value. This algorithm is without obstacle avoidance. If obstacle avoidance is wanted one have to check that the new edge does not intersect the obstacle. %If it intersects one have to find another vertex.\\\\
 \begin{algorithm}[htbp]
  %\KwData{this text}
  %\KwResult{how to write algorithm with \LaTeX2e }
@@ -109,6 +110,7 @@ The RRT algorithm is creating a space-filling tree. In our case it can be used w
  \caption{RDT algorithm}
  \label{alg:rdt}
 \end{algorithm}
+
 Reference \cite{rrt} provides code to find a path using RRT. In \figref{fig:rrt2dex} an example is given of the algorithm. An obstacle has been placed in the search space and the wanted point is behind the obstacle relative to the start point which in this case is the origin \cite{rrt}.
 \begin{figure}[htbp]
   \centering
