@@ -2,7 +2,7 @@
 From the previous chapter we know the robot can be represented as a kinematic chain of rigid bodies and connected by revolute joints\cite{Siciliano}. The kinematics of the manipulator is described without consideration of the forces and torques causing its motion. This means that the description is geometric\cite{spong}. In this chapter the forward kinematics for this robotic manipulator is calculated and a method for solving the inverse kinematics is proposed. 
 
 \section{Forward Kinematics}
-The forward kinematics states the relationship between the end effector and the individual joints given the joint angles. The motion of the manipulator is obtained by composition of the elementary motions of each link with respect to the previous one\cite{Siciliano}. An easy way to get the forward kinematics is to use the Denavit-Hartenberg(DH) convention. Each homogeneous transformation $A_i$ is represented as a product of four basic transformations\cite{spong}: 
+The forward kinematics states the relationship between the end effector and the individual joints when given the joint angles. The motion of the manipulator is obtained by composition of the elementary motions of each link with respect to the previous one\cite{Siciliano}. An easy way to get the forward kinematics is to use the Denavit-Hartenberg(DH) convention. Each homogeneous transformation $A_i$ is represented as a product of four basic transformations\cite{spong}: 
 \begin{align}\label{eq:Ai}
 A_i = \text{Rot}_{z,\theta_i}\text{Trans}_{z,d_i}\text{Trans}_{x,a_i}\text{Rot}_{x,\alpha_i}=
     \begin{bmatrix}
@@ -182,7 +182,7 @@ where $s_{ijk} = \sin{(q_i + q_j + q_k)}$ and the same for $c_{ijk}$. Notice tha
 
 
 \subsection{Jacobian Matrix}
-The geometric Jacobian gives the relationship between the joint velocities and the linear and angular velocities of the end effector\cite{Siciliano,spong}. As we already know, the forward kinematics can be written as:
+The geometric Jacobian gives the relationship between the joint velocities and the linear and angular velocities of the end effector\cite{spong,Siciliano}. As we already know, the forward kinematics can be written as:
 \begin{align*}
     T(q) = 
     \begin{bmatrix}
@@ -297,7 +297,6 @@ now we got everything needed to compute the geometric Jacobian and the result is
         1& 0 & 0 & 0 & c_{234}
     \end{bmatrix}
 \end{align*}
-which has the full rank of $5$. 
 
 
 
@@ -324,8 +323,8 @@ The forward kinematics establishes the relationship between the joint variables 
     \item There might be no admissible solutions, in view of the manipulator kinematic structure.
 \end{itemize}
 There are different methods of solving the inverse kinematics problem. One method is to compute an algebraic solution. The desired solution is a function with orientation and position of the end effector as input, and the output is the joint angles needed to satisfy the input. In our case where we have a 5 DOF robot arm the equations becomes too large and too difficult to solve\cite{spong}. By looking at the equation $T_5^0=H$ where $T_5^0$ is given in \eqref{eq:T5} and $H$ is the desired transformation matrix of the end effector. It shows us that it gives a complex set of equations to solve. Another thing that must be considered is that not all joints in our system can rotate 360 degrees either so if a solution is to be found it may not work because of the limitations of the robot manipulator. \\\\
-It is also possible to use a geometric approach where the thought is to find the joint angels by projecting the manipulator onto the previous plane, and solve it using trigonometry\cite{spong}. Both \cite{Siciliano} and \cite{spong} uses simple manipulators and special cases where simplifications can be made, and do not cover our 5 DOF manipulator.\\\\
-After some research in making a inverse kinematics solver from the bottom and up, it was found that this will not yield satisfactory results since existing and better solutions is already made. The choice was therefore to use an already existing solver. Several solvers were considered but the most commonly used did not have good support for a 5 DOF robot manipulator\cite{Ikfast,kdl}, but after some research the choice fell upon a MATLAB robotics toolbox\cite{MatlabRobTool}. The toolbox has a great interface with ROS which makes it easy to get and send messages via subscribers and publishers\cite{MatlabRobTool,ROSWiki}. A useful part is that it is possible to include the URDF file where MATLAB creates a robot object and represent the robot manipulator as a rigid body tree. In other words it is just the way MATLAB parses the URDF file. In \figref{fig:showRovs} the MATLAB function $show(robot)$ is used and one can see the visualization of the robot. This can be used to check solutions of inverse kinematics and path planning and it can be thought as a simpler version of rviz.  \\\\
+It is also possible to use a geometric approach where the thought is to find the joint angels by projecting the manipulator onto the previous plane, and solve it using trigonometry\cite{spong}. Both \cite{spong} and \cite{Siciliano} uses simple manipulators and special cases where simplifications can be made, and do not cover our 5 DOF manipulator.\\\\
+After some research in making a inverse kinematics solver from the bottom and up, it was found that this will not yield satisfactory results since existing and better solutions is already made. The choice was therefore to use an already existing solver. Several solvers were considered but the most commonly used did not have good support for a 5 DOF robot manipulator\cite{Ikfast,kdl}, but after some research the choice fell upon a MATLAB robotics toolbox\cite{MatlabRobTool}. The toolbox has a great interface with ROS which makes it easy to get and send messages via subscribers and publishers\cite{ROSWiki,MatlabRobTool}. A useful part is that it is possible to include the URDF file where MATLAB creates a robot object and represent the robot manipulator as a rigid body tree. In other words it is just the way MATLAB parses the URDF file. In \figref{fig:showRovs} the MATLAB function $show(robot)$ is used and one can see the visualization of the robot. This can be used to check solutions of inverse kinematics and path planning and it can be thought as a simpler version of rviz.  \\\\
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{img/showRobs.eps}
@@ -342,6 +341,7 @@ ik.SolverParameters.GradientTolerance = 0.000001;
 ik.SolverParameters.MaxTime = 0.1;
 ik.SolverParameters.AllowRandomRestart = 0;
 \end{lstlisting}
+
 The \lstref{lst:gik} shows an example of finding the inverse kinematics. Here we want the end effector to reach the position $p_d$ with the orientation $o_d$. It is also wanted to have some constraints such that the solution is at a feasible configuration which is seen at line 6 to 10. Again the datasheets does not state the operational limits of the joints 2,3 and 4, so the bounds has been guessed. The bounds of the twisting joints 1 and 5 are set to $\pm \pi$ to avoid solutions past these bounds e.g. rotate one and a half round is not necessary when it can rotate half a round. So it is just as security that the solver does not over complicate its solution. \\\\
 \begin{lstlisting}[caption={MATLAB code for specifying $p_d$, $o_d$ and joint bounds which is used to find a solution of the inverse kinematics problem},label={lst:gik},language=Matlab]
 posTgt = robotics.PositionTarget('end_effector');
@@ -358,7 +358,8 @@ initialguess = robot.homeConfiguration;
 [configSoln,solInfo] = ik(initialguess,jointConst,posTgt,orTgt);
 qd = [configSoln(:).JointPosition]';
 \end{lstlisting}
-In \figref{fig:oath} a random path has been generated. It is inside the configuration space of the robot. The projection onto the xy-plane, xz-plane and yz-plane plane is also plotted for convenience to get a better feel of the 3D path. The goal was to generate a circular motion such that it would start and end in the same point. Below in \lstref{lst:path} the process of generate this simple path is shown. The desired orientation in ZYX Euler angles is $o_d = [0,0,0]^T$ which in means that the desired orientation is up.
+In \figref{fig:oath} a random path has been generated. It is inside the configuration space of the robot. The projection onto the xy-plane, xz-plane and yz-plane plane is also plotted for convenience to get a better feel of the 3D path. The goal was to generate a circular motion such that it would start and end in the same point. Below in \lstref{lst:path} the process of generate this simple path is shown. The desired orientation in ZYX Euler angles is $o_d = [0,0,0]^T$ which in means that the desired orientation is up.\\
+
 \begin{lstlisting}[caption={MATLAB code for creating path},label={lst:path},language=Matlab]
 t = 0:steplength:2*pi+steplength
 xpath = 0.035*cos(t)+0.09;
@@ -380,7 +381,7 @@ In \figref{fig:compa} the generated path from \lstref{lst:path} and the calculat
     \begin{subfigure}[htbp]{0.48\textwidth}
         \centering
         \includegraphics[width = \picsSiz\linewidth]{img/compIK.eps}
-        \caption{Comparison by the ran}
+        \caption{Comparison with the IK solved path and the desired path}
         \label{fig:compa}
     \end{subfigure}
     \caption{Testing the inverse kinematic solver}
@@ -395,7 +396,7 @@ In \figref{fig:outOC} some of the path is moved outside the configuration space 
   \label{fig:outOC}
 \end{figure}
 
-In this chapter the forward kinematics has been found along the inverse kinematics. All these are important aspects of a robot system and will used in further work and in this project. 
+In this chapter the forward kinematics has been found along the inverse kinematics. All these are important aspects of a robot system and will used in further work and in this project. The results presented are usable and depending on what task to be done one should consider how one want to handle when the path is outside the configuration space. In most cases it is undesirable to not follow the desired path. To avoid to follow the wrong path one can deny the robot to execute the path if the error is too large. The toolbox also raises a flag if the solution is not inside the error threshold. 
 
 
 

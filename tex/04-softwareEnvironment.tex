@@ -8,16 +8,16 @@ The first thing to get in place is the virtual model of the robot. When the mode
 %As mentioned above it is much better to simulate the given system instead of doing testing on the real system. That is because then one can do testing without destroying expensive equipment and if multiple people are working on the same project everyone can do simulation and testing on the system without waiting in turn. It is also easier to perform testing of control algorithms without any disturbances and noise. 
 
 \section{Robot Operating System(ROS)}
-When designing any type of complex system where different types of software and code shall work together it can be difficult to get every part to work together and pass information to each other. Robot Operating System(ROS) can help with that by creating an easy to use framework for passing information between different processes\cite{ROS}. ROS is not really an operating system as its name may state, but a flexible framework for writing robot software\cite{ROS}. ROS has a collection of libraries, tools, and conventions that are meant to simplify the complex process of creating robust and good robot software. Tasks that can be simple for humans, can be very complex and hard for a robot. ROS was created with the thought of that everyone with knowledge of different robotics aspects can contribute to ROS and at the same time make use of other resources others have made. In such ways ROS is always in development and encourage groups to collaborate to make ROS better and better. \\\\
+When designing any type of complex system where different types of software and code shall work together it can be difficult to get every part to work together and pass information to each other. Robot Operating System(ROS) can help with that by creating an easy to use framework for passing information between different processes\cite{ROS}. ROS is not really an operating system as its name may state, but a flexible framework for writing robot software\cite{ROS}. ROS has a collection of libraries, tools and conventions that are meant to simplify the complex process of creating robust and good robot software. Tasks that can be simple for humans, can be very complex and hard for a robot. ROS was created with the thought of that everyone with knowledge of different robotics aspects can contribute to ROS and at the same time make use of other resources others have made. In such ways ROS is always in development and encourage groups to collaborate to make ROS better and better. \\\\
 In this project the goal is to use ROS as a tool for providing the ability to interact with the simulation environment and do some basic low level control which will enable the use of higher level control. The ROS distribution Kinetic Kame is used\cite{ROS}.
 
 
 \subsection{Rviz}
-Rviz or ROS visualization, is one the packages that comes with ROS at install. It is used for 3D visualization gathered from sensor data from the real system or state data from a simulation environment on a real system. Rviz is a good tool to visualize the current state of the robot. In other words, if some kind of operation with a real robot arm is to be done, it can be useful to visualize what kind of data the sensors really are sending back. This is useful for debugging or for where it is hard to physically see the robot from where the robot is steered from.\\
+Rviz or ROS visualization, is one the packages that comes with ROS at install. It is used for 3D visualization gathered from sensor data from the real system or state data from a simulation environment on a real system. Rviz is a good tool to visualize the current state of the robot. In other words, if some kind of operation with a real robot arm is to be done, it can be useful to visualize what kind of data the sensors really are sending back. This is useful for debugging or if it is hard to physically see the robot from where the robot is steered from.\\
 In this report rviz is used as debugging tool to see that the data which is received corresponds with the expected data. Rviz is mostly included here such that the transition between the simulation and real robot arm is easier. Said differently rviz will make most use of itself when used on the real robot arm\cite{ROSWiki}. 
 
 \section{Simulation environment}
-When choosing a robot simulator the choice fell upon Gazebo. There were several types of simulators that could be used. As one can see in \figref{fig:infra} Gazebo and OpenRAVE has the best support infrastructure which in this project was important\cite{wikiRobSim}. Gazebo was chosen over OpenRAVE, because Gazebo had a more well established ROS documentation and tutorials in the ROS homepage\cite{ROS}.
+When choosing a robot simulator the choice fell upon Gazebo. There were several types of simulators that were considered. As one can see in \figref{fig:infra}, Gazebo and OpenRAVE has the best support infrastructure which in this project was important\cite{wikiRobSim}. Gazebo was chosen over OpenRAVE, because Gazebo had a more well established ROS documentation and tutorials in the ROS homepage\cite{ROS}.
 \begin{figure}[bpth]
   \centering
   \includegraphics[width=.9\textwidth]{img/WikipTableRobSim.png}
@@ -79,11 +79,11 @@ The second important element is the joint element. When multiple links are prese
 </joint>
 \end{lstlisting}
 
-This is the basics for construction a object using URDF. A more detailed walkthrough is given when the method of construction of the robot is given in Section \ref{sec:makingurdf}\cite{ROSWiki}.
+This is the basics for construction a object using URDF. A more detailed walkthrough is given when the method of construction of the robot is done in Section \ref{sec:makingurdf}\cite{ROSWiki}.
 
 
 \subsection{YAML-Yet Another Markup Language}
-YAML is Unicode based data serialization language. It is mainly used for configuration files and internet messaging\cite{YAMLdoc}. In the project, the \textit{joints.yaml} file is the configuration file that states the torque controller properties for each joint. As per now a PID controller is used for each joint. This is based on a SISO system for the joints. The dynamic equations of the manipulator is in fact a complex nonlinear and multivariable system\cite{spong}.
+YAML is Unicode based data serialization language. It is mainly used for configuration files and internet messaging\cite{YAMLdoc}. In this project, the \textit{joints.yaml} file is the configuration file that states the torque controller properties for each joint. As per now a PID controller is used for each joint. This is based on a SISO system for the joints. The dynamic equations of the manipulator is in fact a complex nonlinear and multivariable system\cite{spong}.
 
 \subsection{Launch files}
 The launch files are used for starting up Gazebo, rviz and the nodes used for control and broadcasting joint states. It is also used to place the robot model into the simulation environment. The controller nodes are launched from \textit{control.launch} in the ROS package. 
@@ -209,7 +209,7 @@ The next thing that is necessary to find, is the moments of inertia of the links
     \end{tabular}
 \end{table}
 
-As said above, the complete documentation on the different parts is not complete. This means that some of the lengths has to be guesstimated\cite{Crustcrawler}. In the simplified model (\figref{fig:naming}) there are only boxes except the turntable which is a flat cylinder. The inertia matrix \eqref{eq:inmat} is used:
+As said above, the complete documentation on the different parts is not complete. This means that some of the lengths has to be guesstimated\cite{Crustcrawler}. In the simplified model (\figref{fig:naming}) there are only boxes except the turntable which is a flat cylinder. The inertia matrix in \eqref{eq:inmat} is used:
 \begin{align}\label{eq:inmat}
     I = 
     \begin{bmatrix}
@@ -276,7 +276,7 @@ Now everything needed to make the URDF file is found and the calculations needed
 </link>
 \end{lstlisting}
 
-In \lstref{lst:base} the URDF code for the base is presented. The declaration can be divided into three parts: visual, inertial and collision. The values for the moment of inertia and the mass is set to one since the base is fixed to the world which means that it will not move and the values chosen for it does not matter. The next object to be constructed is the turntable plate which will rotate on top of the base. How the turntable is made can be seen in the attached code, but it is the same method used in \lstref{lst:base}, but with the values given in \tabref{table:partmass}, \tabref{table:measurements} and \tabref{table:inertia}. To connect the two link objects a joint element has to be made. The code used for this is seen in \lstref{lst:jointBTT}:
+In \lstref{lst:base} the URDF code for the base is presented. The declaration can be divided into three parts: visual, inertial and collision. Visual describes how the link looks like when it is spawned, inertial declares the mass and inertial properties of the link and collision declares the collision properties. The values for the moment of inertia and the mass is set to one since the base is fixed to the world which means that it will not move and the values chosen for it does not matter. The next object to be constructed is the turntable plate which will rotate on top of the base. How the turntable is made can be seen in the attached code, but it is the same method used in \lstref{lst:base}, but with the values given in \tabref{table:partmass}, \tabref{table:measurements} and \tabref{table:inertia}. To connect the two link objects, a joint element has to be made. The code used for this is seen in \lstref{lst:jointBTT}:
 
 \begin{lstlisting}[language=xml,caption={joint between base and turntable},label={lst:jointBTT}]
 <joint name="base_to_turntable" type="continuous">

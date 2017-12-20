@@ -48,7 +48,7 @@ pub4.publish(u[3,0])
 pub5.publish(u[4,0])
 \end{lstlisting}
 \end{comment}
-Another important functionality to do control is to get the feedback from Gazebo with joint position and joint velocities. To do this, a subscriber is needed. The subscriber can be thought of as the opposite as the publisher. Instead of publishing values to a service, we instead want to listen to a service. In \lstref{lst:matlabSubs} the process of initialize the subscriber and getting the joint states is seen. 
+Another important functionality to do control is to get the feedback from Gazebo with joint position and joint velocities. To do this, a subscriber is needed. The subscriber can be thought of as the opposite as the publisher. Instead of publishing values to a service, we instead want to listen to a service. In \lstref{lst:matlabSubs} the process of initialize the subscriber and getting the joint states is seen. The subscriber receives an object containing the joint states. 
 \begin{lstlisting}[language=Matlab,caption={MATLAB code for the joint state subscriber},label={lst:matlabSubs}]
     jointstateSubscriber = rossubscriber('/five_dof_robotarm/joint_states');
     q = jointstateSubscriber.LatestMessage.Position;  
@@ -200,7 +200,10 @@ Now that we know that the gravity compensation is working we can start to test t
     \caption{Different plots of recorded data when a large step in desired joint angles is introduced}
     \label{fig:LS}
 \end{figure*}
-In \figref{fig:LS} data is plotted from a random configuration to a kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking, this case may be unrealistic, but it can give a better indication of the robustness of the controller. %In \figref{fig:LSqdot} the joint velocity $\dot{q}_5$ is not as smooth as the other velocities. This can be for a number of reasons. When doing the simulations it was discovered that Gazebo did not handle small inertias very well and it is not known how Gazebo calculates the joint velocities. This combined with the small inertia may lead to the uneven results. %By looking at the other plots as well it does not look like the velocity is what Gazebo tells us it is.  
+In \figref{fig:LS} data is plotted from a random configuration to a kind of inverse position such that every joint get to move. The step is rather large and because the intention of the robot arm is to do set point tracking, this case may be unrealistic, but it can give a better indication of the robustness of the controller. The results are satisfactory and one can see the joint angles are settling quickly without overshoot.
+
+
+%In \figref{fig:LSqdot} the joint velocity $\dot{q}_5$ is not as smooth as the other velocities. This can be for a number of reasons. When doing the simulations it was discovered that Gazebo did not handle small inertias very well and it is not known how Gazebo calculates the joint velocities. This combined with the small inertia may lead to the uneven results. %By looking at the other plots as well it does not look like the velocity is what Gazebo tells us it is.  
 
 
 %. From \figref{fig:LSq} one can see $q_5$ converges rather smooth and the gains will be used for further testing. It may be worth to mention that when doing set point tracking the steps are not be this large and the gains can be altered for better performance.  \\\\
